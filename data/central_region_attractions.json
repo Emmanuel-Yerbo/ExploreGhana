@@ -1,0 +1,955 @@
+[
+  {
+    "id": "cape-coast-castle",
+    "name": "Cape Coast Castle",
+    "local_name": "Carolusburg / Oguaa Castle",
+    "category": "Heritage & Castles",
+    "region": "Central Region",
+    "district": "Cape Coast Metropolitan",
+    "latitude": 5.1053,
+    "longitude": -1.2417,
+    "elevation_m": 12,
+    "description": "UNESCO World Heritage Site built by Swedish traders in 1653 and later expanded by the British. Served as the tragic epicenter of the transatlantic slave trade and the infamous 'Door of No Return'. The museum displays historical artifacts, slave shackles, trade items, and poignant exhibits.",
+    "historical_period": "17th Century (1653)",
+    "entry_fee_ghs": {
+      "local_adult": 30,
+      "local_student": 15,
+      "foreigner_adult": 150,
+      "foreigner_student": 90
+    },
+    "opening_hours": "Monday - Sunday: 09:00 - 17:00",
+    "contact_phone": "+233 33 213 2529",
+    "best_time_to_visit": "Morning (09:00 - 11:30) before coastal humidity peaks",
+    "duration_hours": 2.5,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "UNESCO",
+      "Slave Trade",
+      "Museum",
+      "Coastal",
+      "Historical"
+    ],
+    "image_url": "/static/img/attractions/cape-coast-castle/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/cape-coast-castle/gallery_1.jpg",
+      "/static/img/attractions/cape-coast-castle/gallery_2.jpg",
+      "/static/img/attractions/cape-coast-castle/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Comfortable flat walking shoes (dungeon floors are uneven)",
+      "Water bottle",
+      "Camera / Phone",
+      "Handkerchief (dungeons get warm)"
+    ],
+    "road_access": {
+      "surface": "Paved asphalt (High Street / Victoria Road)",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any standard vehicle or taxi"
+    }
+  },
+  {
+    "id": "elmina-castle",
+    "name": "St. George's Castle (Elmina Castle)",
+    "local_name": "Castelo de S\u00e3o Jorge da Mina",
+    "category": "Heritage & Castles",
+    "region": "Central Region",
+    "district": "Komenda-Edina-Eguafo-Abirem",
+    "latitude": 5.0827,
+    "longitude": -1.3482,
+    "elevation_m": 8,
+    "description": "The oldest European building in existence south of the Sahara, erected by the Portuguese in 1482. Overlooking the vibrant Elmina fishing harbor, it stands as a sobering monument to centuries of gold trading and human commodification under Portuguese, Dutch, and British rule.",
+    "historical_period": "15th Century (1482)",
+    "entry_fee_ghs": {
+      "local_adult": 30,
+      "local_student": 15,
+      "foreigner_adult": 150,
+      "foreigner_student": 90
+    },
+    "opening_hours": "Monday - Sunday: 09:00 - 16:30",
+    "contact_phone": "+233 24 456 7890",
+    "best_time_to_visit": "Late afternoon (15:00 - 16:30) for golden hour photography over the harbor",
+    "duration_hours": 2.0,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "UNESCO",
+      "Portuguese",
+      "Oldest European Structure",
+      "Harbor View"
+    ],
+    "image_url": "/static/img/attractions/elmina-castle/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/elmina-castle/gallery_1.jpg",
+      "/static/img/attractions/elmina-castle/gallery_2.jpg",
+      "/static/img/attractions/elmina-castle/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Sun hat",
+      "Camera with wide lens",
+      "Walking shoes",
+      "Cash for local harbor artisan souvenirs"
+    ],
+    "road_access": {
+      "surface": "Paved asphalt",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Standard saloon car, trotro, or taxi"
+    }
+  },
+  {
+    "id": "fort-st-jago",
+    "name": "Fort St. Jago (Coenraadsburg)",
+    "local_name": "Fort Coenraadsburg",
+    "category": "Heritage & Castles",
+    "region": "Central Region",
+    "district": "Komenda-Edina-Eguafo-Abirem",
+    "latitude": 5.0863,
+    "longitude": -1.3503,
+    "elevation_m": 45,
+    "description": "Perched on St. Jago Hill opposite Elmina Castle, this Dutch military fort was constructed in 1665 to guard the landward approach to Elmina. Offers panoramic 360-degree aerial views of the Atlantic Ocean, the Benya Lagoon, and the bustling fishing fleet.",
+    "historical_period": "17th Century (1665)",
+    "entry_fee_ghs": {
+      "local_adult": 20,
+      "local_student": 10,
+      "foreigner_adult": 70,
+      "foreigner_student": 40
+    },
+    "opening_hours": "Daily: 09:00 - 17:00",
+    "contact_phone": "+233 33 213 2529",
+    "best_time_to_visit": "Morning or sunset for sweeping coastal photography",
+    "duration_hours": 1.0,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "UNESCO",
+      "Military Fort",
+      "Panoramic View",
+      "Dutch Heritage"
+    ],
+    "image_url": "/static/img/attractions/fort-st-jago/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/fort-st-jago/gallery_1.jpg",
+      "/static/img/attractions/fort-st-jago/gallery_2.jpg",
+      "/static/img/attractions/fort-st-jago/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Sunscreen",
+      "Camera",
+      "Stair-friendly footwear (moderate uphill stone steps)"
+    ],
+    "road_access": {
+      "surface": "Paved to hill base, stone footpath to entrance",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any vehicle"
+    }
+  },
+  {
+    "id": "kakum-national-park",
+    "name": "Kakum National Park & Canopy Walkway",
+    "local_name": "Kakum Forest Reserve",
+    "category": "Nature & Wildlife",
+    "region": "Central Region",
+    "district": "Twifo Hemang Lower Denkyira",
+    "latitude": 5.35,
+    "longitude": -1.3833,
+    "elevation_m": 150,
+    "description": "A 375 km\u00b2 tropical moist evergreen rainforest renowned for its world-famous canopy walkway suspended 40 meters (130 feet) in the treetops across 7 bridges (350m total length). Home to forest elephants, bongo antelopes, Diana monkeys, and over 260 bird species.",
+    "historical_period": "Gazetted 1991",
+    "entry_fee_ghs": {
+      "local_adult": 60,
+      "local_student": 30,
+      "foreigner_adult": 220,
+      "foreigner_student": 130
+    },
+    "opening_hours": "Daily: 06:00 - 16:30 (Early morning bird watching by prior booking)",
+    "contact_phone": "+233 33 213 0265",
+    "best_time_to_visit": "07:00 - 10:00 for animal sightings and cooler canopy temperatures",
+    "duration_hours": 3.5,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "Rainforest",
+      "Canopy Walkway",
+      "Bird Watching",
+      "Eco-Tourism",
+      "Wildlife"
+    ],
+    "image_url": "/static/img/attractions/kakum-national-park/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/kakum-national-park/gallery_1.jpg",
+      "/static/img/attractions/kakum-national-park/gallery_2.jpg",
+      "/static/img/attractions/kakum-national-park/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Sturdy hiking boots / sneakers with grip",
+      "Insect repellent",
+      "Light rain jacket",
+      "Binoculars",
+      "Water bottle"
+    ],
+    "road_access": {
+      "surface": "Paved Cape Coast-Twifo Praso Road (approx. 33km north of Cape Coast)",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any saloon car, trotro, or tour bus"
+    }
+  },
+  {
+    "id": "assin-manso-slave-river",
+    "name": "Assin Manso Ancestral Slave River Park",
+    "local_name": "Donkor Nsuo (The Slave River)",
+    "category": "Heritage & Castles",
+    "region": "Central Region",
+    "district": "Assin South",
+    "latitude": 5.4851,
+    "longitude": -1.2064,
+    "elevation_m": 85,
+    "description": "The sacred site where enslaved Africans took their final bath ('Donkor Nsuo') and were sorted and branded before marching to coastal dungeons. Features the Memorial Wall of Return, ancestral prayer grounds, and the preserved gravesites of Samuel Carson and Crystal, whose remains were returned from the diaspora.",
+    "historical_period": "18th - 19th Century",
+    "entry_fee_ghs": {
+      "local_adult": 30,
+      "local_student": 15,
+      "foreigner_adult": 120,
+      "foreigner_student": 70
+    },
+    "opening_hours": "Daily: 08:30 - 17:00",
+    "contact_phone": "+233 24 384 9201",
+    "best_time_to_visit": "Year-round (Especially August during Emancipation Day celebrations)",
+    "duration_hours": 2.0,
+    "guided_tours": true,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Sacred Site",
+      "Slave Route",
+      "Emancipation",
+      "Memorial",
+      "Cultural"
+    ],
+    "image_url": "/static/img/attractions/assin-manso-slave-river/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/assin-manso-slave-river/gallery_1.jpg",
+      "/static/img/attractions/assin-manso-slave-river/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Slippers/sandals if participating in the traditional foot-washing memorial ritual",
+      "Tissues",
+      "Respectful attire"
+    ],
+    "road_access": {
+      "surface": "Asphalt N8 Highway (Accra-Kumasi via Cape Coast)",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Standard saloon car"
+    }
+  },
+  {
+    "id": "hans-cottage-botel",
+    "name": "Hans Cottage Botel & Crocodile Sanctuary",
+    "local_name": "Hans Cottage",
+    "category": "Nature & Wildlife",
+    "region": "Central Region",
+    "district": "Cape Coast Metropolitan",
+    "latitude": 5.1878,
+    "longitude": -1.3094,
+    "elevation_m": 30,
+    "description": "A charming eco-resort built over a tranquil freshwater lake inhabited by tame West African dwarf crocodiles. Visitors can feed and gently touch habituated crocodiles under handler supervision, watch hundreds of weaver birds nesting in the trees, and enjoy lakeside dining.",
+    "historical_period": "Modern Eco-Resort",
+    "entry_fee_ghs": {
+      "local_adult": 20,
+      "local_student": 10,
+      "foreigner_adult": 50,
+      "foreigner_student": 30
+    },
+    "opening_hours": "Daily: 08:00 - 21:00",
+    "contact_phone": "+233 33 213 3488",
+    "best_time_to_visit": "Midday to afternoon when crocodiles bask on floating wooden docks",
+    "duration_hours": 1.5,
+    "guided_tours": true,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Crocodiles",
+      "Bird Watching",
+      "Lakeside Dining",
+      "Family Friendly"
+    ],
+    "image_url": "/static/img/attractions/hans-cottage-botel/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/hans-cottage-botel/gallery_1.jpg",
+      "/static/img/attractions/hans-cottage-botel/gallery_2.jpg",
+      "/static/img/attractions/hans-cottage-botel/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Camera",
+      "Casual attire",
+      "Cash/MoMo for lakeside lunch (GHS 60-120 per meal)"
+    ],
+    "road_access": {
+      "surface": "Paved Cape Coast-Kakum trunk road",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "All vehicles"
+    }
+  },
+  {
+    "id": "brenu-beach",
+    "name": "Brenu Beach (Brenu Akyinim)",
+    "local_name": "Brenu Akyinim",
+    "category": "Beaches & Coastal",
+    "region": "Central Region",
+    "district": "Komenda-Edina-Eguafo-Abirem",
+    "latitude": 5.074,
+    "longitude": -1.4172,
+    "elevation_m": 3,
+    "description": "One of Ghana's cleanest and most secluded white sand beaches, lined with lush coconut palms and protected by natural headlands that create safe, gentle swimming waves without aggressive undertows.",
+    "historical_period": "Natural Coastal Heritage",
+    "entry_fee_ghs": {
+      "local_adult": 10,
+      "local_student": 5,
+      "foreigner_adult": 30,
+      "foreigner_student": 20
+    },
+    "opening_hours": "Open 24 hours (Daylight recommended: 08:00 - 18:30)",
+    "contact_phone": "+233 24 555 1212",
+    "best_time_to_visit": "Weekdays for peace, weekends for relaxed beach vibe",
+    "duration_hours": 3.0,
+    "guided_tours": false,
+    "wheelchair_accessible": false,
+    "tags": [
+      "White Sand",
+      "Safe Swimming",
+      "Secluded",
+      "Coconut Palms",
+      "Beach Volleyball"
+    ],
+    "image_url": "/static/img/attractions/brenu-beach/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/brenu-beach/gallery_1.jpg",
+      "/static/img/attractions/brenu-beach/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Swimwear",
+      "Sunscreen",
+      "Beach towel",
+      "Beach mat",
+      "Picnic basket"
+    ],
+    "road_access": {
+      "surface": "Turn off paved N1 highway onto 3km graded laterite track",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Standard saloon car (moderate speed) or SUV"
+    }
+  },
+  {
+    "id": "fort-amsterdam",
+    "name": "Fort Amsterdam (Abandze)",
+    "local_name": "Kormantin Fort",
+    "category": "Heritage & Castles",
+    "region": "Central Region",
+    "district": "Mfantseman Municipal",
+    "latitude": 5.2005,
+    "longitude": -1.0963,
+    "elevation_m": 42,
+    "description": "Originally built by the British in 1638 as Fort Cormantin and captured by the Dutch Admiral De Ruyter in 1665 who renamed it Fort Amsterdam. Located atop a dramatic coastal bluff overlooking the Atlantic, it holds deep historical significance for the 'Coromantee' maroon diaspora.",
+    "historical_period": "17th Century (1638 / 1665)",
+    "entry_fee_ghs": {
+      "local_adult": 20,
+      "local_student": 10,
+      "foreigner_adult": 60,
+      "foreigner_student": 35
+    },
+    "opening_hours": "Daily: 09:00 - 17:00",
+    "contact_phone": "+233 33 213 2529",
+    "best_time_to_visit": "Late afternoon for coastal ocean breeze and sunset",
+    "duration_hours": 1.5,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "UNESCO",
+      "British & Dutch",
+      "Hilltop Fort",
+      "Diaspora Roots"
+    ],
+    "image_url": "/static/img/attractions/fort-amsterdam/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/fort-amsterdam/gallery_1.jpg",
+      "/static/img/attractions/fort-amsterdam/gallery_2.jpg",
+      "/static/img/attractions/fort-amsterdam/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Walking shoes",
+      "Camera",
+      "Cash for site caretaker tip"
+    ],
+    "road_access": {
+      "surface": "Paved coastal N1 road to Abandze town, 400m climb",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any vehicle"
+    }
+  },
+  {
+    "id": "fort-patience",
+    "name": "Fort Patience (Apam)",
+    "local_name": "Fort Lijdzaamheid",
+    "category": "Heritage & Castles",
+    "region": "Central Region",
+    "district": "Gomoa West",
+    "latitude": 5.2817,
+    "longitude": -0.7303,
+    "elevation_m": 25,
+    "description": "Constructed by the Dutch West India Company between 1697 and 1702 on a rocky peninsula overlooking the picturesque Apam fishing harbor. Named 'Fort Patience' because local resistance stalled its construction for over 5 years.",
+    "historical_period": "17th - 18th Century (1697)",
+    "entry_fee_ghs": {
+      "local_adult": 20,
+      "local_student": 10,
+      "foreigner_adult": 60,
+      "foreigner_student": 35
+    },
+    "opening_hours": "Daily: 09:00 - 17:00",
+    "contact_phone": "+233 24 111 2233",
+    "best_time_to_visit": "Morning to see hundreds of wooden fishing pirogues landing catch",
+    "duration_hours": 1.5,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "UNESCO",
+      "Dutch Heritage",
+      "Fishing Harbor",
+      "Peninsula Fort"
+    ],
+    "image_url": "/static/img/attractions/fort-patience/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/fort-patience/gallery_1.jpg",
+      "/static/img/attractions/fort-patience/gallery_2.jpg",
+      "/static/img/attractions/fort-patience/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Hat",
+      "Comfortable walking sandals",
+      "Camera"
+    ],
+    "road_access": {
+      "surface": "Paved asphalt from Winneba junction into Apam town",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any standard vehicle"
+    }
+  },
+  {
+    "id": "anomabo-beach-fort-william",
+    "name": "Anomabo Beach & Fort William",
+    "local_name": "Anomabo Beach",
+    "category": "Beaches & Coastal",
+    "region": "Central Region",
+    "district": "Mfantseman Municipal",
+    "latitude": 5.1741,
+    "longitude": -1.1197,
+    "elevation_m": 6,
+    "description": "A historic Fante coastal town featuring Fort William (built by the British in 1753), stunning golden beach resorts, and grand 19th-century merchant mansions. The beach hosts popular weekend cultural parties and watersports.",
+    "historical_period": "18th Century (1753)",
+    "entry_fee_ghs": {
+      "local_adult": 15,
+      "local_student": 10,
+      "foreigner_adult": 50,
+      "foreigner_student": 25
+    },
+    "opening_hours": "Beach open 24/7; Fort: 09:00 - 17:00",
+    "contact_phone": "+233 24 333 4455",
+    "best_time_to_visit": "Friday evening to Sunday afternoon",
+    "duration_hours": 3.0,
+    "guided_tours": true,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Beach Resort",
+      "British Fort",
+      "Fante Culture",
+      "Watersports"
+    ],
+    "image_url": "/static/img/attractions/anomabo-beach-fort-william/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/anomabo-beach-fort-william/gallery_1.jpg",
+      "/static/img/attractions/anomabo-beach-fort-william/gallery_2.jpg",
+      "/static/img/attractions/anomabo-beach-fort-william/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Swimwear",
+      "Sunglasses",
+      "Camera",
+      "Beach footwear"
+    ],
+    "road_access": {
+      "surface": "Paved coastal N1 highway",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "All vehicles"
+    }
+  },
+  {
+    "id": "posuban-shrines-mankessim",
+    "name": "Posuban Shrines of Mankessim & Anomabo",
+    "local_name": "Asafo Posuban",
+    "category": "Culture & Shrines",
+    "region": "Central Region",
+    "district": "Mfantseman Municipal",
+    "latitude": 5.2714,
+    "longitude": -1.0205,
+    "elevation_m": 48,
+    "description": "Elaborate, colorful multi-story concrete monuments built by traditional Fante Asafo military warrior companies. Adorned with life-sized figurative statues depicting lions, leopards, European soldiers, warships, clocks, and allegorical proverbs.",
+    "historical_period": "19th - 20th Century Tradition",
+    "entry_fee_ghs": {
+      "local_adult": 10,
+      "local_student": 5,
+      "foreigner_adult": 40,
+      "foreigner_student": 20
+    },
+    "opening_hours": "Daily: Daylight hours (08:00 - 18:00)",
+    "contact_phone": "+233 20 888 9900",
+    "best_time_to_visit": "Morning during market days or during local Asafo cultural festivals",
+    "duration_hours": 2.0,
+    "guided_tours": true,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Fante Art",
+      "Asafo Companies",
+      "Traditional Architecture",
+      "Proverbs",
+      "Sculpture"
+    ],
+    "image_url": "/static/img/attractions/posuban-shrines-mankessim/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/posuban-shrines-mankessim/gallery_1.jpg",
+      "/static/img/attractions/posuban-shrines-mankessim/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Camera",
+      "Modest cultural clothing",
+      "Small tip for local Asafo guide"
+    ],
+    "road_access": {
+      "surface": "Paved central roads throughout town",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any vehicle"
+    }
+  },
+  {
+    "id": "fetu-afahye-festival-grounds",
+    "name": "Oguaa Fetu Afahye Festival & Emintsimadze Palace",
+    "local_name": "Fetu Afahye / Nana Oguaahene Palace",
+    "category": "Culture & Shrines",
+    "region": "Central Region",
+    "district": "Cape Coast Metropolitan",
+    "latitude": 5.1082,
+    "longitude": -1.2464,
+    "elevation_m": 15,
+    "description": "The royal seat of the Oguaa Paramountcy and center of the historic Oguaa Fetu Afahye festival, held annually on the first Saturday of September. Commemorates the triumph of local ancestors over a devastating historical plague with pageantry, drumming, and vibrant regalia.",
+    "historical_period": "Ancient Royal Tradition",
+    "entry_fee_ghs": {
+      "local_adult": 15,
+      "local_student": 5,
+      "foreigner_adult": 50,
+      "foreigner_student": 30
+    },
+    "opening_hours": "Palace visits by prior appointment; festival first week of September",
+    "contact_phone": "+233 33 213 2001",
+    "best_time_to_visit": "First week of September (Fetu Afahye week) for royal durbar",
+    "duration_hours": 2.5,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "Royal Palace",
+      "Chieftaincy",
+      "Fetu Afahye",
+      "Fante Heritage",
+      "Durbar"
+    ],
+    "image_url": "/static/img/attractions/fetu-afahye-festival-grounds/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/fetu-afahye-festival-grounds/gallery_1.jpg",
+      "/static/img/attractions/fetu-afahye-festival-grounds/gallery_2.jpg",
+      "/static/img/attractions/fetu-afahye-festival-grounds/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Cultural etiquette awareness (ask before taking photos of royals)",
+      "Comfortable walking shoes"
+    ],
+    "road_access": {
+      "surface": "Paved Cape Coast municipal road",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any vehicle"
+    }
+  },
+  {
+    "id": "cape-coast-centre-national-culture",
+    "name": "Centre for National Culture (CNC Cape Coast)",
+    "local_name": "CNC Cape Coast",
+    "category": "Culture & Shrines",
+    "region": "Central Region",
+    "district": "Cape Coast Metropolitan",
+    "latitude": 5.1075,
+    "longitude": -1.2492,
+    "elevation_m": 14,
+    "description": "A vibrant hub for traditional Ghanaian arts, crafts, and performing groups. Hosts the Panafest Secretariat, craft shops selling authentic Kente, wood carvings, beadwork, brass art, and regular traditional drumming and dance performances.",
+    "historical_period": "Established 1970s",
+    "entry_fee_ghs": {
+      "local_adult": 0,
+      "local_student": 0,
+      "foreigner_adult": 0,
+      "foreigner_student": 0
+    },
+    "opening_hours": "Monday - Saturday: 08:30 - 17:30",
+    "contact_phone": "+233 33 213 2212",
+    "best_time_to_visit": "Weekdays for craft shopping, Saturday afternoon for dance workshops",
+    "duration_hours": 1.5,
+    "guided_tours": false,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Crafts",
+      "Souvenirs",
+      "Drumming",
+      "Dance",
+      "Panafest",
+      "Free Entry"
+    ],
+    "image_url": "/static/img/attractions/cape-coast-centre-national-culture/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/cape-coast-centre-national-culture/gallery_1.jpg",
+      "/static/img/attractions/cape-coast-centre-national-culture/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Cash / MoMo for authentic craft and souvenir purchases",
+      "Camera"
+    ],
+    "road_access": {
+      "surface": "Paved Cape Coast town road",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Any vehicle"
+    }
+  },
+  {
+    "id": "university-of-cape-coast-campus",
+    "name": "University of Cape Coast Scenic Campus & Botanical Grove",
+    "local_name": "UCC University of Competitive Choice",
+    "category": "Landmarks & Architecture",
+    "region": "Central Region",
+    "district": "Cape Coast Metropolitan",
+    "latitude": 5.1155,
+    "longitude": -1.2825,
+    "elevation_m": 35,
+    "description": "Ghana's premier coastal university founded in 1962, set amidst rolling coastal hills with breathtaking Atlantic ocean views. Features modern and brutalist tropical academic architecture, botanical trial plots, and peaceful tree-lined boulevards.",
+    "historical_period": "Established 1962",
+    "entry_fee_ghs": {
+      "local_adult": 0,
+      "local_student": 0,
+      "foreigner_adult": 0,
+      "foreigner_student": 0
+    },
+    "opening_hours": "Open daily for visitors: 08:00 - 18:00",
+    "contact_phone": "+233 33 213 2440",
+    "best_time_to_visit": "Late afternoon stroll along Old Campus ocean ridge",
+    "duration_hours": 1.5,
+    "guided_tours": false,
+    "wheelchair_accessible": true,
+    "tags": [
+      "University",
+      "Coastal Views",
+      "Architecture",
+      "Education",
+      "Free Entry"
+    ],
+    "image_url": "/static/img/attractions/university-of-cape-coast-campus/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/university-of-cape-coast-campus/gallery_1.jpg",
+      "/static/img/attractions/university-of-cape-coast-campus/gallery_2.jpg",
+      "/static/img/attractions/university-of-cape-coast-campus/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Comfortable walking shoes",
+      "ID card"
+    ],
+    "road_access": {
+      "surface": "Paved dual carriageway",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "All vehicles"
+    }
+  },
+  {
+    "id": "coconut-grove-beach-resort",
+    "name": "Coconut Grove Beach & Golf Resort",
+    "local_name": "Coconut Grove Elmina",
+    "category": "Accommodation & Luxury",
+    "region": "Central Region",
+    "district": "Komenda-Edina-Eguafo-Abirem",
+    "latitude": 5.0785,
+    "longitude": -1.365,
+    "elevation_m": 5,
+    "description": "An award-winning premier oceanfront resort in Elmina set on extensive manicured gardens with coconut palm groves, private ocean beach, swimming pool, horseback riding, bird watching sanctuary, and seaside dining.",
+    "historical_period": "Established 1994",
+    "entry_fee_ghs": {
+      "local_adult": 0,
+      "local_student": 0,
+      "foreigner_adult": 0,
+      "foreigner_student": 0
+    },
+    "opening_hours": "24 hours for hotel guests; Day visitors welcome for dining",
+    "contact_phone": "+233 24 433 3111",
+    "best_time_to_visit": "Weekend brunch or sunset cocktails by the ocean",
+    "duration_hours": 4.0,
+    "guided_tours": false,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Luxury Resort",
+      "Oceanfront",
+      "Swimming Pool",
+      "Seaside Dining",
+      "Horse Riding"
+    ],
+    "image_url": "/static/img/attractions/coconut-grove-beach-resort/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/coconut-grove-beach-resort/gallery_1.jpg",
+      "/static/img/attractions/coconut-grove-beach-resort/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Swimwear",
+      "Smart casual evening attire",
+      "Sun protection"
+    ],
+    "road_access": {
+      "surface": "Paved asphalt road",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "All vehicles"
+    }
+  },
+  {
+    "id": "biriwa-beach-artisanal-harbour",
+    "name": "Biriwa Beach & Artisanal Fishing Harbour",
+    "local_name": "Biriwa Haven",
+    "category": "Beaches & Coastal",
+    "region": "Central Region",
+    "district": "Mfantseman Municipal",
+    "latitude": 5.161,
+    "longitude": -1.155,
+    "elevation_m": 10,
+    "description": "A scenic rocky and sandy coastal cove known for its smoked fish trade, woodcarvers, and tranquil ocean breeze. Home to the Biriwa Beach Hotel and artisan workshops where traditional sea canoes are carved.",
+    "historical_period": "Traditional Coastal Settlement",
+    "entry_fee_ghs": {
+      "local_adult": 0,
+      "local_student": 0,
+      "foreigner_adult": 0,
+      "foreigner_student": 0
+    },
+    "opening_hours": "Open daily: 06:00 - 19:00",
+    "contact_phone": "+233 24 666 7788",
+    "best_time_to_visit": "Late afternoon when fishermen return with fresh catch",
+    "duration_hours": 2.0,
+    "guided_tours": false,
+    "wheelchair_accessible": false,
+    "tags": [
+      "Fishing Cove",
+      "Fresh Seafood",
+      "Woodcarving",
+      "Relaxation",
+      "Scenic Bay"
+    ],
+    "image_url": "/static/img/attractions/biriwa-beach-artisanal-harbour/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/biriwa-beach-artisanal-harbour/gallery_1.jpg",
+      "/static/img/attractions/biriwa-beach-artisanal-harbour/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Camera",
+      "Cash to buy fresh seafood grilled seaside"
+    ],
+    "road_access": {
+      "surface": "Turn off main N1 highway down 1km paved descent",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "All vehicles"
+    }
+  },
+  {
+    "id": "winneba-coastal-lagoon",
+    "name": "Winneba Coastal Lagoon & Aboakyer Grounds",
+    "local_name": "Simpa / Muni-Pomadze Ramsar Site",
+    "category": "Culture & Shrines",
+    "region": "Central Region",
+    "district": "Effutu Municipal",
+    "latitude": 5.3533,
+    "longitude": -0.6231,
+    "elevation_m": 8,
+    "description": "Famous for the historic Aboakyer Deer Hunt festival held every May, where two competing Effutu warrior groups race into the forest to capture a live bushbuck barehanded for the paramount chief. Also encompasses the Muni-Pomadze Ramsar wetland site teeming with migratory waterfowl.",
+    "historical_period": "Ancient Effutu Custom",
+    "entry_fee_ghs": {
+      "local_adult": 15,
+      "local_student": 5,
+      "foreigner_adult": 50,
+      "foreigner_student": 25
+    },
+    "opening_hours": "Daily: 08:00 - 18:00; Festival in May",
+    "contact_phone": "+233 20 999 1122",
+    "best_time_to_visit": "First Saturday of May for Aboakyer festival or October-March for migratory bird watching",
+    "duration_hours": 3.0,
+    "guided_tours": true,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Aboakyer Festival",
+      "Deer Hunt",
+      "Ramsar Wetland",
+      "Effutu Culture",
+      "Lagoon"
+    ],
+    "image_url": "/static/img/attractions/winneba-coastal-lagoon/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/winneba-coastal-lagoon/gallery_1.jpg",
+      "/static/img/attractions/winneba-coastal-lagoon/gallery_2.jpg",
+      "/static/img/attractions/winneba-coastal-lagoon/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Binoculars for bird watching",
+      "Sunhat",
+      "Comfortable walking shoes"
+    ],
+    "road_access": {
+      "surface": "Paved N1 highway junction to Winneba town",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "All vehicles"
+    }
+  },
+  {
+    "id": "saltpond-beach-historic-town",
+    "name": "Historic Saltpond Town & Beach",
+    "local_name": "Akyemfo",
+    "category": "Heritage & Castles",
+    "region": "Central Region",
+    "district": "Mfantseman Municipal",
+    "latitude": 5.2045,
+    "longitude": -1.062,
+    "elevation_m": 15,
+    "description": "Cradle of Ghanaian political independence. The United Gold Coast Convention (UGCC) and Convention People's Party (CPP) were founded in Saltpond. Features historic colonial-era merchant storehouses, traditional salt pans, and a serene ocean beach.",
+    "historical_period": "20th Century Independence Era",
+    "entry_fee_ghs": {
+      "local_adult": 10,
+      "local_student": 5,
+      "foreigner_adult": 30,
+      "foreigner_student": 15
+    },
+    "opening_hours": "Town and beach accessible 24/7",
+    "contact_phone": "+233 24 777 8899",
+    "best_time_to_visit": "Mid-morning for town historical walk",
+    "duration_hours": 2.0,
+    "guided_tours": false,
+    "wheelchair_accessible": true,
+    "tags": [
+      "Political History",
+      "Independence Roots",
+      "Salt Mining",
+      "Beach Walk"
+    ],
+    "image_url": "/static/img/attractions/saltpond-beach-historic-town/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/saltpond-beach-historic-town/gallery_1.jpg",
+      "/static/img/attractions/saltpond-beach-historic-town/gallery_2.jpg",
+      "/static/img/attractions/saltpond-beach-historic-town/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Walking shoes",
+      "Camera",
+      "Notebook for history enthusiasts"
+    ],
+    "road_access": {
+      "surface": "Paved national highway N1",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "All vehicles"
+    }
+  },
+  {
+    "id": "gomoa-fetteh-white-sands",
+    "name": "Gomoa Fetteh & White Sands Beach Club",
+    "local_name": "Gomoa Fetteh",
+    "category": "Beaches & Coastal",
+    "region": "Central Region",
+    "district": "Gomoa East",
+    "latitude": 5.3789,
+    "longitude": -0.4578,
+    "elevation_m": 12,
+    "description": "An exclusive, pristine coastal strip situated where a tranquil freshwater river estuary meets the ocean. Famed for its fine white sands, watersports, luxury beachfront chalets, and proximity to Greater Accra.",
+    "historical_period": "Modern Coastal Sanctuary",
+    "entry_fee_ghs": {
+      "local_adult": 50,
+      "local_student": 30,
+      "foreigner_adult": 150,
+      "foreigner_student": 100
+    },
+    "opening_hours": "Daily: 09:00 - 20:00",
+    "contact_phone": "+233 24 456 9900",
+    "best_time_to_visit": "Weekend getaway for relaxation and estuary kayaking",
+    "duration_hours": 4.0,
+    "guided_tours": false,
+    "wheelchair_accessible": true,
+    "tags": [
+      "White Sands",
+      "Private Beach",
+      "Luxury",
+      "Estuary",
+      "Watersports"
+    ],
+    "image_url": "/static/img/attractions/gomoa-fetteh-white-sands/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/gomoa-fetteh-white-sands/gallery_1.jpg",
+      "/static/img/attractions/gomoa-fetteh-white-sands/gallery_2.jpg",
+      "/static/img/attractions/gomoa-fetteh-white-sands/hero.jpg"
+    ],
+    "what_to_bring": [
+      "Beach attire",
+      "Sunscreen",
+      "Reservation confirmation if visiting private resort"
+    ],
+    "road_access": {
+      "surface": "Paved road from Kasoa-Winneba road through Senya Beraku/Fetteh",
+      "passable_rainy_season": true,
+      "vehicle_recommended": "Standard car or SUV"
+    }
+  },
+  {
+    "id": "assin-attandanso-reserve",
+    "name": "Assin Attandanso Game Production Reserve",
+    "local_name": "Attandanso Reserve",
+    "category": "Nature & Wildlife",
+    "region": "Central Region",
+    "district": "Assin South / Twifo",
+    "latitude": 5.43,
+    "longitude": -1.41,
+    "elevation_m": 160,
+    "description": "Contiguous with Kakum National Park, this 154 km\u00b2 wildlife sanctuary protects critical virgin rainforest habitat along the Pra River corridor. Renowned among botanists and researchers for rare medicinal tree species, forest primates, and wild river trekking.",
+    "historical_period": "Gazetted 1991",
+    "entry_fee_ghs": {
+      "local_adult": 40,
+      "local_student": 20,
+      "foreigner_adult": 120,
+      "foreigner_student": 70
+    },
+    "opening_hours": "Daily: 07:00 - 16:00 (Ranger-escorted treks only)",
+    "contact_phone": "+233 33 213 0265",
+    "best_time_to_visit": "Dry season (November to March) for easier forest trail navigation",
+    "duration_hours": 4.5,
+    "guided_tours": true,
+    "wheelchair_accessible": false,
+    "tags": [
+      "Wilderness",
+      "Pra River",
+      "Rare Primates",
+      "Botanical Trekking",
+      "Untamed"
+    ],
+    "image_url": "/static/img/attractions/assin-attandanso-reserve/hero.jpg",
+    "gallery": [
+      "/static/img/attractions/assin-attandanso-reserve/gallery_1.jpg",
+      "/static/img/attractions/assin-attandanso-reserve/gallery_2.jpg",
+      "/static/img/attractions/assin-attandanso-reserve/hero.jpg"
+    ],
+    "what_to_bring": [
+      "High-ankle hiking boots",
+      "Leech/insect protection",
+      "Rain poncho",
+      "At least 2L water",
+      "Rucksack"
+    ],
+    "road_access": {
+      "surface": "Laterite forest access road",
+      "passable_rainy_season": false,
+      "vehicle_recommended": "High-clearance vehicle or 4x4 during rainy months"
+    }
+  }
+]

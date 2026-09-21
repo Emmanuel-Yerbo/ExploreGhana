@@ -1,0 +1,102 @@
+/* Custom ExploreGhana Styling */
+
+/* Custom Scrollbars */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+  width: 5px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Category Chip Active State */
+.category-chip.active {
+  background-color: #006B3F !important;
+  color: #ffffff !important;
+  border-color: #006B3F !important;
+  box-shadow: 0 1px 3px rgba(0, 107, 63, 0.3);
+}
+
+/* Card Selection Highlight */
+.attraction-card.selected {
+  border-color: #006B3F !important;
+  background-color: #f0fdf4 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 107, 63, 0.15), 0 2px 4px -1px rgba(0, 107, 63, 0.1);
+}
+
+/* Custom Marker Pins */
+.custom-pin {
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 2px solid #ffffff;
+}
+
+.custom-pin:hover, .custom-pin.active {
+  transform: rotate(-45deg) scale(1.25);
+  z-index: 50 !important;
+}
+
+.custom-pin-inner {
+  transform: rotate(45deg);
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Category Pin Colors */
+.pin-heritage { background-color: #991b1b; color: #ffffff; }
+.pin-nature { background-color: #006B3F; color: #ffffff; }
+.pin-beach { background-color: #0284c7; color: #ffffff; }
+.pin-culture { background-color: #d97706; color: #ffffff; }
+.pin-landmark { background-color: #4f46e5; color: #ffffff; }
+.pin-default { background-color: #1f2937; color: #ffffff; }
+
+/* Custom MapLibre Popups */
+.maplibregl-popup-content {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.maplibregl-popup-close-button {
+  padding: 4px 8px !important;
+  font-size: 16px !important;
+  color: #ffffff !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  border-radius: 50% !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 10 !important;
+}
+
+/* Modal animations */
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.25s ease-out forwards;
+}

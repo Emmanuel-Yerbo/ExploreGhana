@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExploreGhana — National Tourism Geoportal</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇬🇭</text></svg>">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ghana: {
+              red: '#CE1126',
+              gold: '#FCD116',
+              green: '#006B3F',
+              dark: '#0A2618',
+              surface: '#F8FAF7'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- MapLibre GL JS v4 -->
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased overflow-hidden font-sans">
+  
+  <!-- App Shell Container -->
+  <div class="flex flex-col h-screen w-screen overflow-hidden">
+    
+    <!-- Top Navigation Bar -->
+    <header class="bg-ghana-dark text-white h-16 px-4 flex items-center justify-between border-b border-ghana-green/40 shadow-lg z-30 flex-shrink-0">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-6 rounded shadow-sm overflow-hidden flex flex-col border border-white/20 flex-shrink-0">
+          <div class="h-2 bg-[#CE1126]"></div>
+          <div class="h-2 bg-[#FCD116] flex items-center justify-center relative">
+            <svg class="w-2.5 h-2.5 text-black fill-current" viewBox="0 0 24 24">
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+            </svg>
+          </div>
+          <div class="h-2 bg-[#006B3F]"></div>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-black tracking-tight text-white flex items-center">
+              Explore<span class="text-ghana-gold">Ghana</span>
+            </h1>
+            <span class="bg-ghana-green/90 text-emerald-100 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-400/30">
+              Pilot V0
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-300 hidden sm:block">
+            Ministry of Tourism, Arts & Culture — Central Region Geoportal
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center space-x-2">
+        <button id="btn-locate-me" class="bg-ghana-green hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center space-x-1.5 transition-all shadow-sm border border-emerald-500/40">
+          <i data-lucide="crosshair" class="w-3.5 h-3.5 text-ghana-gold"></i>
+          <span class="hidden sm:inline">Near Me</span>
+        </button>
+
+        <button id="btn-toggle-boundary" class="bg-gray-800/80 hover:bg-gray-700 text-gray-200 text-xs font-medium px-3 py-2 rounded-lg flex items-center space-x-1.5 transition-all border border-gray-700">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span class="hidden md:inline">Region Boundary</span>
+        </button>
+
+        <a href="/docs" target="_blank" class="bg-gray-800/80 hover:bg-gray-700 text-gray-200 text-xs font-medium px-3 py-2 rounded-lg flex items-center space-x-1 transition-all border border-gray-700">
+          <i data-lucide="code-2" class="w-3.5 h-3.5 text-ghana-gold"></i>
+          <span class="hidden md:inline">Spatial API</span>
+        </a>
+
+        <!-- Mobile View Toggle -->
+        <button id="btn-mobile-toggle" class="md:hidden bg-ghana-gold text-ghana-dark p-2 rounded-lg shadow font-bold">
+          <i data-lucide="list" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace (Sidebar + Map) -->
+    <div class="flex flex-1 relative overflow-hidden">
+      
+      <!-- Left Discovery Sidebar -->
+      <aside id="sidebar" class="w-full md:w-[420px] lg:w-[460px] bg-white h-full flex flex-col z-20 border-r border-gray-200 shadow-xl transition-all duration-300 absolute md:relative inset-y-0 left-0">
+        
+        <!-- Search & Filter Controls Panel -->
+        <div class="p-4 bg-white border-b border-gray-200 flex-shrink-0 space-y-3">
+          
+          <!-- Search Input -->
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="Search Cape Coast Castle, Kakum, beaches..." 
+              class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ghana-green focus:bg-white transition-all shadow-inner"
+            />
+            <button id="clear-search" class="hidden absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Category Horizontal Scroll Pills -->
+          <div>
+            <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5 font-semibold">
+              <span>EXPLORE CATEGORIES</span>
+              <span id="results-count" class="text-ghana-green font-bold">20 Attractions</span>
+            </div>
+            <div id="category-chips" class="flex space-x-1.5 overflow-x-auto pb-1 scrollbar-thin">
+              <button data-category="all" class="category-chip active whitespace-nowrap text-xs font-semibold px-3 py-1.5 rounded-full border border-ghana-green bg-ghana-green text-white shadow-sm transition-all">
+                All (20)
+              </button>
+              <button data-category="Heritage & Castles" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                🏰 Castles & Forts
+              </button>
+              <button data-category="Nature & Wildlife" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                🌿 Rainforest & Eco
+              </button>
+              <button data-category="Beaches & Coastal" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                🏖️ Beaches & Coves
+              </button>
+              <button data-category="Culture & Shrines" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                🥁 Culture & Shrines
+              </button>
+            </div>
+          </div>
+
+          <!-- Proximity Banner (Active when GPS triggered) -->
+          <div id="nearby-banner" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-xs text-emerald-800">
+              <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+              <span>Sorting by closest to your location</span>
+            </div>
+            <button id="btn-reset-nearby" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Attraction Cards List Container -->
+        <div id="attractions-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/70">
+          <!-- Populated dynamically via app.js -->
+        </div>
+
+        <!-- Footer / Credits -->
+        <div class="p-3 bg-white border-t border-gray-200 text-center text-xs text-gray-500 flex items-center justify-between">
+          <span class="flex items-center space-x-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Central Region Pilot</span>
+          </span>
+          <span class="font-medium text-gray-600">Built by Emmanuel Yerbo</span>
+        </div>
+      </aside>
+
+      <!-- Map Viewport -->
+      <main class="flex-1 h-full w-full relative">
+        <div id="map" class="h-full w-full"></div>
+
+        <!-- Map Layer Switcher Floating Widget -->
+        <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-1.5 rounded-xl shadow-lg border border-gray-200 z-10 flex flex-col space-y-1 text-xs">
+          <button id="btn-style-streets" class="px-2.5 py-1.5 rounded-lg bg-ghana-dark text-white font-medium flex items-center space-x-1.5 shadow-sm">
+            <i data-lucide="map" class="w-3.5 h-3.5"></i>
+            <span>Terrain & Roads</span>
+          </button>
+          <button id="btn-style-satellite" class="px-2.5 py-1.5 rounded-lg hover:bg-gray-100 text-gray-700 font-medium flex items-center space-x-1.5">
+            <i data-lucide="satellite" class="w-3.5 h-3.5"></i>
+            <span>Satellite View</span>
+          </button>
+        </div>
+
+        <!-- Quick Region Legend -->
+        <div class="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-gray-200 z-10 hidden sm:block max-w-xs text-xs">
+          <h4 class="font-bold text-gray-800 flex items-center space-x-1.5 mb-1.5">
+            <span class="w-3 h-3 rounded-full bg-ghana-green inline-block"></span>
+            <span>Central Region Tourism Zone</span>
+          </h4>
+          <p class="text-gray-500 text-[11px] leading-relaxed">
+            Click any pin to inspect entry fees, historical background, road accessibility, and guided tour requirements.
+          </p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Full Detail Modal Drawer -->
+  <div id="detail-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-6 transition-all opacity-0">
+    <div class="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col relative animate-scale-up">
+      
+      <!-- Modal Close Button -->
+      <button id="btn-close-modal" class="absolute top-3 right-3 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 z-20 backdrop-blur-sm transition-all">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Modal Content Body -->
+      <div id="modal-content" class="overflow-y-auto flex-1">
+        <!-- Injected dynamically via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Scripts -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

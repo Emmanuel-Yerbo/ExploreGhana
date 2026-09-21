@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "central-region",
+      "properties": {
+        "region_code": "CR",
+        "region_name": "Central Region",
+        "capital": "Cape Coast",
+        "capital_coords": [-1.2464, 5.1053],
+        "area_sq_km": 9826,
+        "population_est": 2859821,
+        "total_districts": 22,
+        "tourism_tagline": "The Heartbeat of Historic Heritage and Tropical Coastal Wonder",
+        "description": "The Central Region of Ghana is the historic and cultural cradle of the nation. It boasts UNESCO World Heritage slave trade fortresses, the legendary Kakum rainforest canopy, picturesque fishing harbors, and vibrant cultural festivals like Oguaa Fetu Afahye and Aboakyer.",
+        "primary_ecosystems": ["Moist Tropical Forest", "Coastal Savannah", "Mangrove Lagoons", "Sandy Ocean Littoral"]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-1.980, 5.920],
+            [-1.810, 5.990],
+            [-1.650, 5.980],
+            [-1.480, 6.020],
+            [-1.320, 5.960],
+            [-1.180, 5.940],
+            [-1.020, 5.910],
+            [-0.850, 5.860],
+            [-0.720, 5.780],
+            [-0.580, 5.640],
+            [-0.450, 5.510],
+            [-0.420, 5.380],
+            [-0.440, 5.340],
+            [-0.560, 5.320],
+            [-0.700, 5.260],
+            [-0.850, 5.220],
+            [-1.020, 5.180],
+            [-1.150, 5.150],
+            [-1.250, 5.100],
+            [-1.350, 5.080],
+            [-1.460, 5.060],
+            [-1.550, 5.090],
+            [-1.720, 5.180],
+            [-1.850, 5.350],
+            [-1.930, 5.550],
+            [-1.980, 5.750],
+            [-1.980, 5.920]
+          ]
+        ]
+      }
+    }
+  ]
+}
