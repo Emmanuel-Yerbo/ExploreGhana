@@ -4,7 +4,8 @@
 **Role:** Lead Geospatial Software Engineer
 **Client / Beneficiary:** Ministry of Tourism, Arts & Culture, Ghana
 **Technology Stack:** Python 3.12 · FastAPI · Pydantic v2 · MapLibre GL JS v4 · Docker (PostGIS schema provisioned for V1 migration)
-**Status:** V0 Pilot complete, hardened, and push-ready — 27 automated tests passing ✅  
+**Live URL:** [https://exploreghana.onrender.com](https://exploreghana.onrender.com)  
+**Status:** V0 Pilot Live & Deployed — 27 automated tests passing ✅  
 **Build Authority:** `../DEVELOPER/TOURISM/07_GROUNDED_BUILD_PLAN.md` — verified data sources, cut list, and grounded V0.5→V1 order (all roadmap claims below follow doc 07)
 
 ---
