@@ -7,6 +7,7 @@ const state = {
   selectedSiteId: null,    // 'kakum-national-park'
   siteData: null,          // Micro-spatial dataset for active site
   microMarkers: {},        // Map markers for micro-POIs
+  activePopup: null,       // Currently opened maplibre Popup instance
   regions: [],             // All 16 regions loaded from /api/regions
   districts: [],           // Districts for active region
   allAttractions: [],      // All 45 attractions loaded from /api/attractions
@@ -1347,10 +1348,72 @@ function showToast(msg) {
 
 const CHECKLIST_STORAGE_KEY = 'exploreghana_kakum_checklist';
 
+// Close all active popups on the map
+function closeAllPopups() {
+  if (state.activePopup) {
+    try { state.activePopup.remove(); } catch(e){}
+    state.activePopup = null;
+  }
+  Object.values(state.microMarkers).forEach(m => {
+    try {
+      const p = m.getPopup();
+      if (p && p.isOpen()) p.remove();
+    } catch(e){}
+  });
+}
+
+// Quick Focus Camera Shortcuts for Tier-4 Zones
+function focusSiteZone(zone) {
+  closeAllPopups();
+  const sidebarWidth = window.innerWidth >= 768 ? 440 : 0;
+  const padding = { left: sidebarWidth, top: 40, bottom: 40, right: 40 };
+
+  if (zone === 'hub') {
+    // Focus on Visitor Services Hub (Parking, Reception, Tickets, Cafe, Washrooms)
+    map.flyTo({
+      center: [-1.3836, 5.34885],
+      zoom: 18.1,
+      pitch: 35,
+      bearing: -10,
+      padding: padding,
+      duration: 1200,
+      essential: true
+    });
+  } else if (zone === 'canopy') {
+    // Focus on Canopy Walkway Platform 1 & Bridge 1 Bailout Route
+    map.flyTo({
+      center: [-1.3835, 5.3537],
+      zoom: 17.6,
+      pitch: 45,
+      bearing: -15,
+      padding: padding,
+      duration: 1200,
+      essential: true
+    });
+  } else if (zone === 'full') {
+    // Fit entire trail extent
+    map.fitBounds([
+      [-1.3865, 5.3475],
+      [-1.3810, 5.3570]
+    ], {
+      padding: padding,
+      duration: 1400,
+      maxZoom: 16.5
+    });
+  }
+}
+
 async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national-park') {
   state.currentTier = 'site';
   state.selectedRegionId = regionId;
   state.selectedSiteId = siteSlug;
+
+  // Close any stray open popups
+  closeAllPopups();
+
+  // Hide regional legend card to free up map space
+  const regLeg = document.getElementById('region-legend-card');
+  if (regLeg) regLeg.classList.add('hidden');
 
   // Update hash without triggering redundant loop
   if (window.location.hash !== `#/${regionId}/${siteSlug}/console`) {
@@ -1402,14 +1465,15 @@ async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national
     const data = await res.json();
     state.siteData = data;
 
-    // Fly camera directly to Kakum site center at high zoom with angle
+    // Fly camera directly to Visitor Hub at zoom 18.0 with left padding to avoid sidebar crowding
     const sidebarWidth = window.innerWidth >= 768 ? 440 : 20;
     map.flyTo({
-      center: [data.center_coordinates.longitude, data.center_coordinates.latitude],
-      zoom: 16.6,
-      pitch: 45,
-      bearing: -12,
-      duration: 1800,
+      center: [-1.38355, 5.34885],
+      zoom: 18.0,
+      pitch: 35,
+      bearing: -10,
+      padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
+      duration: 1600,
       essential: true
     });
 
@@ -1434,6 +1498,8 @@ async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national
 }
 
 function exitSiteConsole(updateHash = true) {
+  closeAllPopups();
+
   // Clear micro markers from map
   Object.values(state.microMarkers).forEach(m => m.remove());
   state.microMarkers = {};
@@ -1444,6 +1510,10 @@ function exitSiteConsole(updateHash = true) {
   // Hide console panel
   const siteConsolePanel = document.getElementById('site-console-panel');
   if (siteConsolePanel) siteConsolePanel.classList.add('hidden');
+
+  // Restore regional legend card
+  const regLeg = document.getElementById('region-legend-card');
+  if (regLeg) regLeg.classList.remove('hidden');
 
   // Clear console breadcrumb
   const bcSepConsole = document.getElementById('bc-sep-console');
@@ -1460,6 +1530,7 @@ function exitSiteConsole(updateHash = true) {
     window.location.hash = `#/${state.selectedRegionId || 'central'}`;
   }
 }
+
 
 function setupMicroSpatialLayers(geojson) {
   if (map.getSource('kakum-micro-source')) {
@@ -1556,7 +1627,8 @@ function removeMicroSpatialLayers() {
 }
 
 function renderMicroMarkers(geojson) {
-  // Clear existing micro markers
+  // Clear existing micro markers and popups
+  closeAllPopups();
   Object.values(state.microMarkers).forEach(m => m.remove());
   state.microMarkers = {};
 
@@ -1573,18 +1645,27 @@ function renderMicroMarkers(geojson) {
     el.id = `micro-pin-${props.id}`;
     el.innerHTML = `<span>${props.icon || meta.icon}</span>`;
 
-    const popup = new maplibregl.Popup({ offset: 15, closeButton: true }).setHTML(`
-      <div class="p-3 max-w-xs text-left">
+    const popup = new maplibregl.Popup({ 
+      offset: 18, 
+      closeButton: true,
+      closeOnClick: true,
+      maxWidth: '260px'
+    }).setHTML(`
+      <div class="p-3 text-left">
         <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">${meta.label}</span>
         <h4 class="font-bold text-xs text-gray-900 leading-tight mt-0.5">${props.name}</h4>
         ${props.elevation_m ? `<span class="text-[10px] text-gray-500 block mt-0.5">Elevation: ${props.elevation_m}m</span>` : ''}
         <p class="text-[11px] text-gray-600 mt-1.5 leading-relaxed">${props.description}</p>
-        ${props.fee_token ? `<div class="mt-2 text-[10px] font-bold text-emerald-800 bg-emerald-50 p-1.5 rounded border border-emerald-200">Token: ${props.fee_token}</div>` : ''}
+        ${props.fee_token ? `<div class="mt-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-50 p-1.5 rounded border border-emerald-200">Token: ${props.fee_token}</div>` : ''}
       </div>
     `);
 
-    el.addEventListener('click', () => {
-      popup.addTo(map);
+    // Ensure only one popup is active at a time
+    popup.on('open', () => {
+      if (state.activePopup && state.activePopup !== popup) {
+        try { state.activePopup.remove(); } catch(e){}
+      }
+      state.activePopup = popup;
     });
 
     const marker = new maplibregl.Marker({ element: el })
@@ -1603,46 +1684,119 @@ function renderMicroPOIsTab(geojson) {
 
   if (countEl) countEl.innerText = `${geojson.features.length} Features`;
 
-  container.innerHTML = geojson.features.map(feat => {
-    const props = feat.properties;
-    const isPoint = feat.geometry.type === 'Point';
-    const coords = isPoint ? feat.geometry.coordinates : (feat.geometry.type === 'Polygon' ? feat.geometry.coordinates[0][0] : feat.geometry.coordinates[0]);
+  // Group features into 3 structured zones
+  const zones = [
+    {
+      name: "Arrival & Visitor Services Hub",
+      icon: "🏛️",
+      ids: [
+        'kakum-parking-lot',
+        'kakum-reception-office',
+        'kakum-ticket-office',
+        'kakum-rainforest-cafeteria',
+        'kakum-restrooms-poi',
+        'kakum-toilets-building',
+        'kakum-museum-building',
+        'kakum-observation-tower'
+      ]
+    },
+    {
+      name: "Canopy Walkway Suspension System",
+      icon: "🌉",
+      ids: [
+        'kakum-canopy-launch-platform',
+        'kakum-emergency-bailout',
+        'kakum-paved-concourse',
+        'kakum-canopy-trail-approach'
+      ]
+    },
+    {
+      name: "Rainforest Wilderness & Natural Giants",
+      icon: "🌳",
+      ids: [
+        'kakum-historic-big-tree',
+        'kakum-afafranto-campsite'
+      ]
+    }
+  ];
+
+  container.innerHTML = zones.map(zone => {
+    const zoneFeatures = geojson.features.filter(f => zone.ids.includes(f.properties.id));
+    if (zoneFeatures.length === 0) return '';
+
+    const cardsHtml = zoneFeatures.map(feat => {
+      const props = feat.properties;
+      const isPoint = feat.geometry.type === 'Point';
+      const coords = isPoint 
+        ? feat.geometry.coordinates 
+        : (feat.geometry.type === 'Polygon' ? feat.geometry.coordinates[0][0] : feat.geometry.coordinates[0]);
+
+      const isHub = zone.name.includes("Arrival");
+      const targetZoom = isHub ? 18.2 : 17.6;
+
+      return `
+        <div 
+          onclick="flyToMicroFeature('${props.id}', ${coords[0]}, ${coords[1]}, ${targetZoom})"
+          class="p-2.5 bg-white rounded-xl border border-gray-200 hover:border-emerald-500 hover:shadow-sm cursor-pointer transition-all flex items-start space-x-2.5 group"
+        >
+          <span class="text-base flex-shrink-0 mt-0.5">${props.icon || (feat.geometry.type === 'Polygon' ? '📐' : '🥾')}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <h5 class="text-xs font-bold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors truncate">
+                ${props.name}
+              </h5>
+              <span class="text-[9px] bg-gray-100 text-gray-600 font-semibold px-1.5 py-0.5 rounded capitalize flex-shrink-0 ml-1">
+                ${props.category || feat.geometry.type}
+              </span>
+            </div>
+            <p class="text-[11px] text-gray-500 line-clamp-2 mt-0.5 leading-tight">
+              ${props.description}
+            </p>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     return `
-      <div 
-        onclick="flyToMicroFeature('${props.id}', ${coords[0]}, ${coords[1]})"
-        class="p-2.5 bg-white rounded-xl border border-gray-200 hover:border-emerald-500 hover:shadow-sm cursor-pointer transition-all flex items-start space-x-2.5 group"
-      >
-        <span class="text-base flex-shrink-0 mt-0.5">${props.icon || (feat.geometry.type === 'Polygon' ? '📐' : '🥾')}</span>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between">
-            <h5 class="text-xs font-bold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors truncate">
-              ${props.name}
-            </h5>
-            <span class="text-[9px] bg-gray-100 text-gray-600 font-semibold px-1.5 py-0.5 rounded capitalize flex-shrink-0">
-              ${props.category || feat.geometry.type}
-            </span>
-          </div>
-          <p class="text-[11px] text-gray-500 line-clamp-2 mt-0.5 leading-tight">
-            ${props.description}
-          </p>
+      <div class="space-y-1.5 pt-1">
+        <div class="flex items-center space-x-1.5 px-1 text-[11px] font-bold text-emerald-900 uppercase tracking-wider">
+          <span>${zone.icon}</span>
+          <span>${zone.name}</span>
+          <span class="text-[10px] text-gray-400 font-normal">(${zoneFeatures.length})</span>
+        </div>
+        <div class="space-y-1.5">
+          ${cardsHtml}
         </div>
       </div>
     `;
   }).join('');
 }
 
-function flyToMicroFeature(id, lon, lat) {
+function flyToMicroFeature(id, lon, lat, zoom = 18.0) {
+  // Dismiss all existing popups first
+  closeAllPopups();
+
+  const sidebarWidth = window.innerWidth >= 768 ? 440 : 0;
   map.flyTo({
     center: [lon, lat],
-    zoom: 17.5,
-    pitch: 45,
-    duration: 1200
+    zoom: zoom,
+    pitch: 35,
+    bearing: -10,
+    padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
+    duration: 1000,
+    essential: true
   });
 
-  if (state.microMarkers[id]) {
-    state.microMarkers[id].togglePopup();
-  }
+  // Open only the clicked feature's popup
+  setTimeout(() => {
+    if (state.microMarkers[id]) {
+      const p = state.microMarkers[id].getPopup();
+      if (p) {
+        p.addTo(map);
+        state.activePopup = p;
+      }
+    }
+  }, 450);
 }
 
 // Checklist Storage & State Helpers
