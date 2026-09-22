@@ -162,6 +162,22 @@ async def get_attraction_micro_spatial(attraction_id: str):
         )
     return data
 
+@app.get(
+    "/api/attractions/{attraction_id}/boundary",
+    tags=["Tier-4 Micro-Spatial"],
+)
+async def get_attraction_boundary(attraction_id: str):
+    """
+    Retrieve macro boundary polygon for supported protected areas / parks.
+    """
+    data = repo.get_park_boundary(attraction_id)
+    if not data:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Boundary polygon not available for '{attraction_id}'.",
+        )
+    return data
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

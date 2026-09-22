@@ -13,6 +13,7 @@ FALLBACK_REGIONS_FILE = DATA_DIR / "regions_geojson.json"
 CENTRAL_DISTRICTS_FILE = DATA_DIR / "central_districts_adm2.json"
 ASHANTI_DISTRICTS_FILE = DATA_DIR / "ashanti_districts_adm2.json"
 KAKUM_MICRO_SPATIAL_FILE = DATA_DIR / "kakum_micro_spatial.json"
+KAKUM_PARK_BOUNDARY_FILE = DATA_DIR / "kakum_park_boundary.json"
 
 class SpatialRepository:
     """
@@ -25,6 +26,7 @@ class SpatialRepository:
         self.regions_geojson: Dict[str, Any] = {}
         self.districts_by_region: Dict[str, Dict[str, Any]] = {}
         self.micro_spatial_data: Dict[str, Any] = {}
+        self.park_boundaries: Dict[str, Any] = {}
         self.reload_data()
 
     def reload_data(self):
@@ -70,9 +72,20 @@ class SpatialRepository:
                 k_data = json.load(f)
                 self.micro_spatial_data["kakum-national-park"] = k_data
 
+        # Load park boundary polygons (for StoryMap macro context)
+        self.park_boundaries = {}
+        if KAKUM_PARK_BOUNDARY_FILE.exists():
+            with open(KAKUM_PARK_BOUNDARY_FILE, "r", encoding="utf-8") as f:
+                b_data = json.load(f)
+                self.park_boundaries["kakum-national-park"] = b_data
+
     def get_micro_spatial(self, attraction_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve Tier-4 site-level micro-spatial dataset for supported attractions."""
         return self.micro_spatial_data.get(attraction_id.lower())
+
+    def get_park_boundary(self, attraction_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve park boundary polygon for supported attractions."""
+        return self.park_boundaries.get(attraction_id.lower())
 
     def get_region_by_id(self, region_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve a specific region feature and metadata by slug ID."""

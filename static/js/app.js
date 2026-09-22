@@ -110,14 +110,15 @@ const MICRO_POI_META = {
 };
 
 
-// Initialize MapLibre GL Map
+// Initialize MapLibre GL Map with 3D terrain and pitch capabilities (Doc 09)
 const map = new maplibregl.Map({
   container: 'map',
   style: BASEMAP_STYLES.streets,
   center: NATIONAL_VIEW.center,
   zoom: NATIONAL_VIEW.zoom,
   minZoom: 5.5,
-  maxZoom: 18
+  maxZoom: 20,
+  maxPitch: 85
 });
 
 // Add Navigation and Scale controls
@@ -126,6 +127,7 @@ map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), '
 
 // Map Load Event Handler
 map.on('load', async () => {
+  initTerrainAndSky();
   await loadRegionsData();
   await fetchAttractions();
   setupEventListeners();
@@ -139,6 +141,68 @@ window.addEventListener('hashchange', handleHashChange);
 // ---------------------------------------------------------------------------
 // 1. Data Ingestion & Map Layer Management
 // ---------------------------------------------------------------------------
+
+// Initialize 3D Terrain, Warm Hillshade, and Atmosphere (Doc 09 §5.3)
+function initTerrainAndSky() {
+  try {
+    // 1. AWS Open Data Terrarium elevation tiles (Free global terrain, no key)
+    if (!map.getSource('terrain-dem')) {
+      map.addSource('terrain-dem', {
+        type: 'raster-dem',
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        encoding: 'terrarium',
+        tileSize: 256,
+        maxzoom: 15
+      });
+    }
+
+    // 2. Separate raster-dem instance for warm hillshade (best-practice render quality)
+    if (!map.getSource('hillshade-dem')) {
+      map.addSource('hillshade-dem', {
+        type: 'raster-dem',
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        encoding: 'terrarium',
+        tileSize: 256,
+        maxzoom: 15
+      });
+    }
+
+    // 3. Warm rainforest hillshade layer
+    if (!map.getLayer('kakum-hillshade')) {
+      map.addLayer({
+        id: 'kakum-hillshade',
+        type: 'hillshade',
+        source: 'hillshade-dem',
+        paint: {
+          'hillshade-shadow-color': '#1a2e1a',
+          'hillshade-highlight-color': '#ffffff',
+          'hillshade-accent-color': '#2e4d2e',
+          'hillshade-exaggeration': 0.6
+        }
+      });
+    }
+
+    // 4. Set 3D Terrain — exaggeration strictly 1.0 (Rule 5.3: honesty over drama)
+    map.setTerrain({ source: 'terrain-dem', exaggeration: 1.0 });
+
+    // 5. Terrain Control toggle
+    map.addControl(new maplibregl.TerrainControl({ source: 'terrain-dem', exaggeration: 1.0 }), 'bottom-right');
+
+    // 6. Sky atmosphere
+    if (map.setSky) {
+      map.setSky({
+        'sky-color': '#87ceeb',
+        'sky-horizon-blend': 0.5,
+        'horizon-color': '#e0f2fe',
+        'horizon-fog-blend': 0.8,
+        'fog-color': '#f0fdf4',
+        'fog-ground-blend': 0.7
+      });
+    }
+  } catch (err) {
+    console.warn('Terrain or atmosphere setup notice:', err);
+  }
+}
 
 // Load all 16 Ghana Regions
 async function loadRegionsData() {
@@ -277,7 +341,7 @@ async function fetchAttractions() {
 // 2. Multi-Scale Hierarchy & Camera Navigation
 // ---------------------------------------------------------------------------
 
-// Hash Change Handler (SPA Deep Linking)
+// Hash Change Handler (SPA Deep Linking & Story Routing, Doc 09 §6.3)
 function handleHashChange() {
   const hash = window.location.hash || '#/';
   const clean = hash.replace(/^#\/?/, '');
@@ -286,11 +350,16 @@ function handleHashChange() {
   const regionSlug = parts[0] || null;
   const siteSlug = parts[1] || null;
   const subView = parts[2] || null;
+  const actParam = parts[3] || null;
 
   if (!regionSlug) {
     transitionToTier('national');
-  } else if (siteSlug === 'kakum-national-park' && subView === 'console') {
-    enterSiteConsole(regionSlug, siteSlug);
+  } else if (siteSlug === 'kakum-national-park') {
+    if (subView === 'story') {
+      enterSiteConsole(regionSlug, siteSlug, 'story', actParam);
+    } else {
+      enterSiteConsole(regionSlug, siteSlug, 'explorer');
+    }
   } else if (regionSlug === 'central' || regionSlug === 'ashanti') {
     transitionToTier('regional', regionSlug, siteSlug);
   } else {
@@ -1419,6 +1488,10 @@ function toggleRainforestSound() {
   const icon = document.getElementById('soundscape-icon');
   const label = document.getElementById('soundscape-label');
 
+  const hudBtn = document.getElementById('hud-soundscape-btn');
+  const hudIcon = document.getElementById('hud-soundscape-icon');
+  const hudLabel = document.getElementById('hud-soundscape-label');
+
   if (state.soundscapeActive) {
     if (soundscapeGainNode && soundscapeAudioCtx) {
       try {
@@ -1434,6 +1507,10 @@ function toggleRainforestSound() {
     if (icon) icon.innerText = '🔇';
     if (label) label.innerText = 'Rainforest Sound';
     if (btn) btn.classList.remove('bg-emerald-700', 'text-white');
+
+    if (hudIcon) hudIcon.innerText = '🔇';
+    if (hudLabel) hudLabel.innerText = 'Rainforest Audio';
+    if (hudBtn) hudBtn.classList.remove('bg-emerald-700', 'text-white');
   } else {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -1490,6 +1567,10 @@ function toggleRainforestSound() {
       if (icon) icon.innerText = '🔊';
       if (label) label.innerText = 'Sound: Playing';
       if (btn) btn.classList.add('bg-emerald-700', 'text-white');
+
+      if (hudIcon) hudIcon.innerText = '🔊';
+      if (hudLabel) hudLabel.innerText = 'Playing';
+      if (hudBtn) hudBtn.classList.add('bg-emerald-700', 'text-white');
     } catch(err) {
       console.warn('Web Audio not supported or blocked:', err);
       showToast('Audio autoplay not allowed without user gesture');
@@ -1497,6 +1578,16 @@ function toggleRainforestSound() {
   }
 }
 
+// Pause soundscape when browser tab is not active
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && state.soundscapeActive && soundscapeGainNode && soundscapeAudioCtx) {
+    try { soundscapeGainNode.gain.setValueAtTime(0.0001, soundscapeAudioCtx.currentTime); } catch(e){}
+  } else if (!document.hidden && state.soundscapeActive && soundscapeGainNode && soundscapeAudioCtx) {
+    try { soundscapeGainNode.gain.setValueAtTime(0.12, soundscapeAudioCtx.currentTime); } catch(e){}
+  }
+});
+
+// Dual-Mode Switching: StoryMap vs Explorer
 function switchSiteSubMode(mode) {
   state.siteSubMode = mode;
   const storyBtn = document.getElementById('submode-btn-story');
@@ -1526,16 +1617,793 @@ function switchSiteSubMode(mode) {
     }
     if (storyContainer) storyContainer.classList.add('hidden');
     if (explorerContainer) explorerContainer.classList.remove('hidden');
+    closeStoryOverlay();
   }
   lucide.createIcons();
 }
+
+// ---------------------------------------------------------------------------
+// Camera Choreography Engine (Doc 09 §4)
+// ---------------------------------------------------------------------------
+
+let driftAnimationId = null;
+let driftBaseBearing = 0;
+let driftStartTime = null;
+let driftKilledForAct = false;
+
+function runCameraTransition(spec) {
+  if (!spec) return Promise.resolve();
+
+  killAmbientDrift();
+  driftKilledForAct = false;
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) {
+    map.jumpTo({
+      center: spec.center,
+      zoom: spec.zoom,
+      pitch: spec.pitch || 0,
+      bearing: spec.bearing || 0
+    });
+    return Promise.resolve();
+  }
+
+  // Padding offset so focused feature centers in the visible canvas
+  const padding = state.storyOverlayActive
+    ? (window.innerWidth >= 768 ? { left: 480, top: 60, bottom: 60, right: 60 } : { top: 0, bottom: Math.round(window.innerHeight * 0.45), left: 20, right: 20 })
+    : (window.innerWidth >= 768 ? { left: 440, top: 40, bottom: 40, right: 40 } : { top: 0, bottom: 40, left: 20, right: 20 });
+
+  const transitionType = spec.transition || 'flyTo';
+
+  return new Promise((resolve) => {
+    if (transitionType === 'ease-chain' && spec.keyframes && spec.keyframes.length > 0) {
+      // Chained easeTo keyframes (Customize-camera-animations pattern)
+      let chain = Promise.resolve();
+      spec.keyframes.forEach((kf) => {
+        chain = chain.then(() => new Promise((kfResolve) => {
+          map.easeTo({
+            center: kf.center,
+            zoom: kf.zoom,
+            pitch: kf.pitch !== undefined ? kf.pitch : map.getPitch(),
+            bearing: kf.bearing !== undefined ? kf.bearing : map.getBearing(),
+            duration: kf.duration_ms || 1200,
+            padding: padding
+          });
+          map.once('moveend', kfResolve);
+        }));
+      });
+      chain.then(() => {
+        startAmbientDriftIfNeeded(spec.ambient);
+        resolve();
+      });
+    } else if (transitionType === 'fitBounds') {
+      const bounds = spec.bounds || [
+        [-1.3870, 5.3480],
+        [-1.3800, 5.3580]
+      ];
+      map.fitBounds(bounds, {
+        pitch: spec.pitch !== undefined ? spec.pitch : 30,
+        bearing: spec.bearing !== undefined ? spec.bearing : 10,
+        duration: (spec.fly_options && spec.fly_options.duration) || 3200,
+        maxZoom: spec.zoom || 16.3,
+        padding: padding
+      });
+      map.once('moveend', () => {
+        startAmbientDriftIfNeeded(spec.ambient);
+        resolve();
+      });
+    } else if (transitionType === 'easeTo') {
+      map.easeTo({
+        center: spec.center,
+        zoom: spec.zoom,
+        pitch: spec.pitch !== undefined ? spec.pitch : 0,
+        bearing: spec.bearing !== undefined ? spec.bearing : 0,
+        duration: (spec.fly_options && spec.fly_options.duration) || 2800,
+        padding: padding
+      });
+      map.once('moveend', () => {
+        startAmbientDriftIfNeeded(spec.ambient);
+        resolve();
+      });
+    } else {
+      // flyTo with curve and speed
+      const curve = (spec.fly_options && spec.fly_options.curve) !== undefined ? spec.fly_options.curve : 1.42;
+      const speed = (spec.fly_options && spec.fly_options.speed) !== undefined ? spec.fly_options.speed : 0.6;
+      map.flyTo({
+        center: spec.center,
+        zoom: spec.zoom,
+        pitch: spec.pitch !== undefined ? spec.pitch : 0,
+        bearing: spec.bearing !== undefined ? spec.bearing : 0,
+        curve: curve,
+        speed: speed,
+        padding: padding,
+        essential: true
+      });
+      map.once('moveend', () => {
+        startAmbientDriftIfNeeded(spec.ambient);
+        resolve();
+      });
+    }
+  });
+}
+
+function startAmbientDriftIfNeeded(ambientConfig) {
+  if (!ambientConfig || !ambientConfig.drift) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (driftKilledForAct) return;
+
+  killAmbientDrift();
+  driftBaseBearing = map.getBearing();
+  driftStartTime = performance.now();
+
+  function step(timestamp) {
+    if (driftKilledForAct) return;
+    const elapsed = (timestamp - driftStartTime) / 1000;
+    // Bearing oscillates +-0.8 degrees over ~40s (sine wave)
+    const delta = Math.sin((elapsed / 40) * 2 * Math.PI) * 0.8;
+    map.setBearing(driftBaseBearing + delta);
+    driftAnimationId = requestAnimationFrame(step);
+  }
+
+  driftAnimationId = requestAnimationFrame(step);
+}
+
+function killAmbientDrift() {
+  if (driftAnimationId) {
+    cancelAnimationFrame(driftAnimationId);
+    driftAnimationId = null;
+  }
+}
+
+// User interaction events kill drift permanently for current act
+['mousedown', 'wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, (e) => {
+    if (e.target.closest && (e.target.closest('#map') || e.target.closest('#storymap-overlay'))) {
+      driftKilledForAct = true;
+      killAmbientDrift();
+    }
+  }, { passive: true });
+});
+
+// ---------------------------------------------------------------------------
+// Living Lines Engine (Progressive Line Draw & Dash-Flow)
+// ---------------------------------------------------------------------------
+
+let dashFlowAnimationId = null;
+let dashStep = 0;
+
+function startDashFlow() {
+  if (dashFlowAnimationId) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  function step() {
+    dashStep = (dashStep + 1) % 100;
+    const p1 = (dashStep * 0.08) % 2;
+    if (map.getLayer('kakum-trail-line')) {
+      try {
+        map.setPaintProperty('kakum-trail-line', 'line-dasharray', [0.5 + p1, 2.2]);
+      } catch(e){}
+    }
+    dashFlowAnimationId = setTimeout(() => requestAnimationFrame(step), 70);
+  }
+  step();
+}
+
+function stopDashFlow() {
+  if (dashFlowAnimationId) {
+    clearTimeout(dashFlowAnimationId);
+    dashFlowAnimationId = null;
+  }
+  if (map.getLayer('kakum-trail-line')) {
+    try { map.setPaintProperty('kakum-trail-line', 'line-dasharray', [1, 0]); } catch(e){}
+  }
+}
+
+// Progressive Line Draw via requestAnimationFrame (Rule 5 & §5.2)
+function animateLineDraw(featureId, durationMs = 2200) {
+  if (!state.siteData || !state.siteData.geojson) return;
+  const feat = state.siteData.geojson.features.find(f => f.properties && f.properties.id === featureId);
+  if (!feat || !feat.geometry || !feat.geometry.coordinates) return;
+
+  const coords = feat.geometry.coordinates;
+  if (coords.length < 2) return;
+
+  const animSource = map.getSource('kakum-animated-trail-source');
+  if (!animSource) return;
+
+  const startTime = performance.now();
+
+  function frame(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / durationMs);
+    const count = Math.max(2, Math.floor(progress * coords.length));
+    const currentCoords = coords.slice(0, count);
+
+    try {
+      animSource.setData({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: currentCoords
+          }
+        }]
+      });
+    } catch(e){}
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+// Staggered Bridge Draw (Bridge 1 through 7, 180ms delay each)
+function animateBridgesStaggered(delayMs = 180) {
+  const bridgeIds = [
+    'kakum-canopy-bridge-1',
+    'kakum-canopy-bridge-2',
+    'kakum-canopy-bridge-3',
+    'kakum-canopy-bridge-4',
+    'kakum-canopy-bridge-5',
+    'kakum-canopy-bridge-6',
+    'kakum-canopy-bridge-7'
+  ];
+
+  if (!map.getLayer('kakum-bridges-line')) return;
+
+  // Start with empty filter
+  map.setFilter('kakum-bridges-line', ['in', ['get', 'id'], ['literal', []]]);
+  map.setFilter('kakum-bridges-glow', ['in', ['get', 'id'], ['literal', []]]);
+
+  bridgeIds.forEach((id, idx) => {
+    setTimeout(() => {
+      const activeIds = bridgeIds.slice(0, idx + 1);
+      if (map.getLayer('kakum-bridges-line')) {
+        map.setFilter('kakum-bridges-line', ['in', ['get', 'id'], ['literal', activeIds]]);
+        map.setFilter('kakum-bridges-glow', ['in', ['get', 'id'], ['literal', activeIds]]);
+      }
+    }, idx * delayMs);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Focus Semantics Engine (Rule 4: Focus is Subtraction)
+// ---------------------------------------------------------------------------
+
+function updateStoryFocusSemantics(ch, index) {
+  // 1. POI Marker Focus Subtraction
+  const focusIds = ch.focus_features || [];
+  const hasFocus = focusIds.length > 0;
+
+  Object.entries(state.microMarkers).forEach(([featId, marker]) => {
+    const el = marker.getElement();
+    if (!el) return;
+
+    if (!hasFocus) {
+      if (index === 0) {
+        el.classList.remove('focused');
+        el.classList.add('dimmed');
+      } else {
+        el.classList.remove('focused', 'dimmed');
+      }
+    } else if (focusIds.includes(featId)) {
+      el.classList.add('focused');
+      el.classList.remove('dimmed');
+      el.setAttribute('aria-current', 'true');
+    } else {
+      el.classList.remove('focused');
+      el.classList.add('dimmed');
+      el.removeAttribute('aria-current');
+    }
+  });
+
+  // 2. Vector Layer Opacity & Glow Transitions (Rule 4 & §5.1)
+  // Boundary fill & outline
+  if (map.getLayer('kakum-boundary-fill')) {
+    map.setPaintProperty('kakum-boundary-fill', 'fill-opacity', index === 0 ? 0.10 : 0.03);
+  }
+  if (map.getLayer('kakum-boundary-line')) {
+    map.setPaintProperty('kakum-boundary-line', 'line-opacity', index === 0 ? 0.90 : 0.25);
+    map.setPaintProperty('kakum-boundary-line', 'line-width', index === 0 ? 2.5 : 1.5);
+  }
+
+  // Hub buildings and parking
+  if (map.getLayer('kakum-parking-fill')) {
+    map.setPaintProperty('kakum-parking-fill', 'fill-opacity', index === 1 ? 0.75 : 0.12);
+  }
+  if (map.getLayer('kakum-buildings-fill')) {
+    map.setPaintProperty('kakum-buildings-fill', 'fill-opacity', index === 1 ? 0.75 : 0.12);
+  }
+
+  // Approach Trail
+  if (map.getLayer('kakum-trail-line')) {
+    map.setPaintProperty('kakum-trail-line', 'line-opacity', index === 2 ? 1.0 : 0.15);
+    map.setPaintProperty('kakum-trail-line', 'line-width', index === 2 ? 4.5 : 2.5);
+  }
+
+  // Canopy Bridges
+  if (map.getLayer('kakum-bridges-line')) {
+    if (index === 3) {
+      map.setPaintProperty('kakum-bridges-line', 'line-opacity', 1.0);
+      map.setPaintProperty('kakum-bridges-line', 'line-width', 4.5);
+      if (map.getLayer('kakum-bridges-glow')) {
+        map.setPaintProperty('kakum-bridges-glow', 'line-opacity', 0.9);
+      }
+    } else if (index === 4) {
+      map.setPaintProperty('kakum-bridges-line', 'line-opacity', 0.20);
+      map.setPaintProperty('kakum-bridges-line', 'line-width', 2.5);
+      if (map.getLayer('kakum-bridges-glow')) {
+        map.setPaintProperty('kakum-bridges-glow', 'line-opacity', 0.15);
+      }
+    } else {
+      map.setPaintProperty('kakum-bridges-line', 'line-opacity', 0.12);
+      if (map.getLayer('kakum-bridges-glow')) {
+        map.setPaintProperty('kakum-bridges-glow', 'line-opacity', 0.0);
+      }
+    }
+  }
+}
+
+function resetFocusSemantics() {
+  Object.values(state.microMarkers).forEach(m => {
+    const el = m.getElement();
+    if (el) {
+      el.classList.remove('focused', 'dimmed');
+      el.style.opacity = '1';
+      el.style.filter = 'none';
+      el.style.pointerEvents = 'auto';
+    }
+  });
+
+  const allLayers = [
+    'kakum-parking-fill', 'kakum-parking-line',
+    'kakum-buildings-fill', 'kakum-buildings-line',
+    'kakum-paved-line', 'kakum-trail-line',
+    'kakum-bridges-glow', 'kakum-bridges-line'
+  ];
+  allLayers.forEach(id => {
+    if (map.getLayer(id)) {
+      if (id.includes('fill')) {
+        map.setPaintProperty(id, 'fill-opacity', id.includes('parking') ? 0.35 : 0.4);
+      } else if (id.includes('glow')) {
+        map.setPaintProperty(id, 'line-opacity', 0.85);
+      } else if (id.includes('line')) {
+        map.setPaintProperty(id, 'line-opacity', 1.0);
+      }
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Scrollytelling Overlay & Chapter Progression (Doc 09 §6)
+// ---------------------------------------------------------------------------
+
+let storyObserver = null;
 
 function renderStoryMode(data) {
   if (!data || !data.story_chapters) return;
   renderStoryChapter(state.currentStoryChapterIndex || 0);
   renderVerticalStratification(data.vertical_stratification);
+  renderStoryOverlay(data);
 }
 
+function openStoryOverlay(targetIndex = 0) {
+  state.storyOverlayActive = true;
+  state.siteSubMode = 'story';
+
+  // Hide left sidebar to let map fill full viewport
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) {
+    sidebar.classList.add('-translate-x-full', 'md:-translate-x-full');
+  }
+
+  // Show story overlay
+  const overlay = document.getElementById('storymap-overlay');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    overlay.style.opacity = '1';
+  }
+
+  // Ensure steps are rendered
+  if (state.siteData) {
+    renderStoryOverlay(state.siteData);
+  }
+
+  // Jump to requested step
+  setTimeout(() => {
+    jumpToStoryStep(targetIndex);
+  }, 100);
+
+  lucide.createIcons();
+}
+
+function closeStoryOverlay() {
+  state.storyOverlayActive = false;
+
+  // Restore sidebar
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) {
+    sidebar.classList.remove('-translate-x-full', 'md:-translate-x-full');
+  }
+
+  // Hide overlay
+  const overlay = document.getElementById('storymap-overlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
+
+  killAmbientDrift();
+  stopDashFlow();
+  resetFocusSemantics();
+  focusSiteZone('hub');
+
+  if (window.location.hash.includes('/story')) {
+    window.location.hash = `#/central/kakum-national-park/console`;
+  }
+}
+
+function jumpToStoryStep(index) {
+  state.currentStoryStepIndex = index;
+  const el = document.getElementById(`story-step-${index}`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  for (let i = 0; i <= 5; i++) {
+    const d = document.getElementById(`hud-dot-${i}`);
+    if (d) {
+      if (i === index) d.classList.add('active');
+      else d.classList.remove('active');
+    }
+  }
+}
+
+function setupStoryScroller() {
+  const container = document.getElementById('story-scroll-container');
+  if (!container) return;
+
+  container.removeEventListener('scroll', handleStoryContainerScroll);
+  container.addEventListener('scroll', handleStoryContainerScroll, { passive: true });
+
+  if (storyObserver) {
+    storyObserver.disconnect();
+  }
+
+  const steps = container.querySelectorAll('.story-step');
+  storyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = parseInt(entry.target.dataset.stepIndex, 10);
+        onStoryStepIntersection(idx);
+      }
+    });
+  }, {
+    root: container,
+    threshold: 0.52
+  });
+
+  steps.forEach(s => storyObserver.observe(s));
+}
+
+function handleStoryContainerScroll() {
+  const container = document.getElementById('story-scroll-container');
+  if (!container) return;
+  const maxScroll = container.scrollHeight - container.clientHeight;
+  if (maxScroll > 0) {
+    const pct = Math.min(100, Math.max(0, (container.scrollTop / maxScroll) * 100));
+    const bar = document.getElementById('story-progress-bar');
+    if (bar) bar.style.width = `${pct}%`;
+  }
+}
+
+function onStoryStepIntersection(stepIdx) {
+  state.currentStoryStepIndex = stepIdx;
+
+  for (let i = 0; i <= 5; i++) {
+    const d = document.getElementById(`hud-dot-${i}`);
+    if (d) {
+      if (i === stepIdx) d.classList.add('active');
+      else d.classList.remove('active');
+    }
+  }
+
+  if (stepIdx === 0) {
+    // Intro step: macro overview
+    killAmbientDrift();
+    map.flyTo({
+      center: [-1.38, 5.37],
+      zoom: 12.0,
+      pitch: 25,
+      bearing: 0,
+      duration: 1800
+    });
+    if (map.getLayer('kakum-boundary-fill')) {
+      map.setPaintProperty('kakum-boundary-fill', 'fill-opacity', 0.12);
+    }
+    if (map.getLayer('kakum-boundary-line')) {
+      map.setPaintProperty('kakum-boundary-line', 'line-opacity', 0.9);
+    }
+    Object.values(state.microMarkers).forEach(m => {
+      const el = m.getElement();
+      if (el) el.classList.add('dimmed');
+    });
+  } else {
+    goToStoryChapter(stepIdx - 1, { source: 'scroll' });
+  }
+}
+
+// Render Scrollytelling Steps (Intro + 5 Acts)
+function renderStoryOverlay(data) {
+  const container = document.getElementById('story-scroll-container');
+  if (!container || !data || !data.story_chapters) return;
+
+  const chapters = data.story_chapters;
+
+  let stepsHtml = `
+    <!-- Step 0: The Intro Step -->
+    <section class="story-step w-full max-w-lg" id="story-step-0" data-step-index="0">
+      <div class="story-step-card bg-white/95 backdrop-blur-md rounded-2xl p-5 shadow-2xl border border-white/50 space-y-3.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300">
+            Spatial Story Journey
+          </span>
+          <span class="text-[10px] font-bold text-gray-400">
+            Kakum National Park &bull; Ghana
+          </span>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-black text-gray-900 leading-tight">
+            The Island of Green: 375 km² of Canopy Rainforest
+          </h2>
+          <p class="text-xs text-gray-600 mt-1 leading-relaxed">
+            An interactive 3D cartographic expedition through one of West Africa's last primary rainforest refuges. 
+            Scroll down to descend through the vertical strata from the forest floor to 40 meters above the ravine.
+          </p>
+        </div>
+
+        <div class="rounded-xl overflow-hidden border border-gray-200 shadow-inner relative">
+          <img src="/static/img/attractions/kakum-national-park/hero.jpg" alt="Kakum Canopy" class="w-full h-44 object-cover" />
+          <div class="absolute bottom-1 right-2 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded font-mono">
+            Wikimedia Commons (CC BY-SA)
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-[10px]">
+          <div class="bg-gray-50 p-2 rounded-xl border border-gray-200">
+            <span class="text-gray-400 block font-semibold">Bridges</span>
+            <strong class="text-emerald-800 text-xs font-black">7 Spans</strong>
+          </div>
+          <div class="bg-gray-50 p-2 rounded-xl border border-gray-200">
+            <span class="text-gray-400 block font-semibold">Max Drop</span>
+            <strong class="text-emerald-800 text-xs font-black">~40 Meters</strong>
+          </div>
+          <div class="bg-gray-50 p-2 rounded-xl border border-gray-200">
+            <span class="text-gray-400 block font-semibold">Reserve</span>
+            <strong class="text-emerald-800 text-xs font-black">375 km²</strong>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
+          <span class="text-xs text-emerald-800 font-bold flex items-center space-x-1.5 animate-pulse">
+            <span>Scroll down to begin</span>
+            <span>↓</span>
+          </span>
+          <button type="button" onclick="jumpToStoryStep(1)" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm transition-all cursor-pointer">
+            Begin Act I &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  chapters.forEach((ch, idx) => {
+    const stepIdx = idx + 1;
+    stepsHtml += `
+      <section class="story-step w-full max-w-lg" id="story-step-${stepIdx}" data-step-index="${stepIdx}">
+        <div class="story-step-card bg-white/95 backdrop-blur-md rounded-2xl p-5 shadow-2xl border border-white/50 space-y-3.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300">
+              ${ch.act_title}
+            </span>
+            <span class="text-[10px] font-bold text-gray-400">
+              ${ch.era}
+            </span>
+          </div>
+
+          <div>
+            <h3 class="text-base font-black text-gray-900 leading-snug">
+              ${ch.subtitle}
+            </h3>
+            <div class="flex items-center space-x-2 mt-1 text-[11px] text-gray-500">
+              <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold">
+                🏔️ ${ch.elevation_m}m Elevation
+              </span>
+              <span>&bull;</span>
+              <span class="font-semibold">Act ${ch.act_number} of 5</span>
+              ${ch.stratum_ref !== undefined ? `
+                <span>&bull;</span>
+                <button type="button" onclick="focusVerticalStratum(${ch.stratum_ref})" class="text-emerald-700 font-bold hover:underline">
+                  Stratum Profile 🌲
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          ${ch.media && ch.media.image ? `
+            <div class="rounded-xl overflow-hidden border border-gray-200 relative shadow-inner">
+              <img src="${ch.media.image}" alt="${ch.act_title}" class="w-full h-40 object-cover" onerror="this.src='/static/img/attractions/kakum-national-park/hero.jpg'" />
+              <div class="absolute bottom-1 right-2 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded font-mono">
+                ${ch.media.credit || 'CC BY-SA'}
+              </div>
+            </div>
+          ` : ''}
+
+          <p class="text-xs text-gray-800 leading-relaxed font-normal">
+            ${ch.narrative}
+          </p>
+
+          ${ch.proverb ? `
+            <div class="proverb-quote p-3 text-xs text-amber-900 shadow-2xs">
+              "${ch.proverb}"
+            </div>
+          ` : ''}
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 bg-emerald-50/90 rounded-xl border border-emerald-100 space-y-1">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-900 block">🌿 Ecological Science</span>
+              <p class="text-[11px] text-emerald-900 leading-tight">${ch.ecological_focus}</p>
+            </div>
+            <div class="p-2.5 bg-amber-50/90 rounded-xl border border-amber-100 space-y-1">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-amber-900 block">🏺 Cultural Heritage</span>
+              <p class="text-[11px] text-amber-900 leading-tight">${ch.cultural_heritage}</p>
+            </div>
+          </div>
+
+          ${ch.narrative_sources && ch.narrative_sources.length > 0 ? `
+            <details class="text-[10px] text-gray-500 bg-gray-50/90 p-2.5 rounded-xl border border-gray-200">
+              <summary class="font-bold text-gray-700 cursor-pointer flex items-center justify-between select-none">
+                <span>📋 Verified Spatial & Historical Citations</span>
+                <span class="text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.2 rounded text-[9px]">Verified</span>
+              </summary>
+              <div class="space-y-1 mt-2 pt-2 border-t border-gray-200">
+                ${ch.narrative_sources.map(ns => `
+                  <div class="leading-snug">
+                    <strong class="text-gray-900">&bull; ${ns.claim}:</strong>
+                    <span class="text-gray-600">${ns.source}</span>
+                    <span class="text-gray-400 font-mono">(${ns.verified_date})</span>
+                  </div>
+                `).join('')}
+              </div>
+            </details>
+          ` : ''}
+
+          <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs font-semibold">
+            <button 
+              type="button" 
+              onclick="jumpToStoryStep(${stepIdx - 1})"
+              class="text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 py-1.5 px-3 rounded-xl border border-gray-200 transition-all cursor-pointer"
+            >
+              <span>← Prev</span>
+            </button>
+
+            ${stepIdx === 5 ? `
+              <button 
+                type="button" 
+                onclick="closeStoryOverlay()"
+                class="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-1.5 px-4 rounded-xl shadow-md font-bold transition-all cursor-pointer flex items-center space-x-1.5"
+              >
+                <span>Continue to Explorer Tools 🛠️</span>
+              </button>
+            ` : `
+              <button 
+                type="button" 
+                onclick="jumpToStoryStep(${stepIdx + 1})"
+                class="bg-emerald-700 hover:bg-emerald-800 text-white py-1.5 px-3.5 rounded-xl shadow-sm transition-all cursor-pointer flex items-center space-x-1"
+              >
+                <span>Next Act →</span>
+              </button>
+            `}
+          </div>
+        </div>
+      </section>
+    `;
+  });
+
+  container.innerHTML = stepsHtml;
+  setupStoryScroller();
+}
+
+// Single Entry Point for Chapter Navigation (Doc 09 §6.3)
+function goToStoryChapter(index, opts = {}) {
+  const chapters = state.siteData ? state.siteData.story_chapters : null;
+  if (!chapters || index < 0 || index >= chapters.length) return;
+
+  state.currentStoryChapterIndex = index;
+  state.currentStoryStepIndex = index + 1;
+  closeAllPopups();
+
+  // 1. Update Timeline & HUD dots
+  for (let i = 0; i < chapters.length; i++) {
+    const sDot = document.getElementById(`story-dot-${i}`);
+    if (sDot) {
+      if (i === index) sDot.classList.add('active');
+      else sDot.classList.remove('active');
+    }
+    const hDot = document.getElementById(`hud-dot-${i + 1}`);
+    if (hDot) {
+      if (i === index) hDot.classList.add('active');
+      else hDot.classList.remove('active');
+    }
+  }
+  const introHudDot = document.getElementById('hud-dot-0');
+  if (introHudDot) introHudDot.classList.remove('active');
+
+  // 2. Render sidebar card
+  renderStoryChapter(index);
+
+  const ch = chapters[index];
+
+  // 3. Camera Transition (Rule 2 & 3)
+  runCameraTransition(ch.camera);
+
+  // 4. Focus Subtraction & Paint Transitions (Rule 1 & 4)
+  updateStoryFocusSemantics(ch, index);
+
+  // 5. Living Line Progressive Draws (Rule 5)
+  if (ch.draw_line === 'kakum-paved-concourse') {
+    animateLineDraw('kakum-paved-concourse', 2200);
+  } else if (ch.draw_line === 'kakum-canopy-trail-approach') {
+    animateLineDraw('kakum-canopy-trail-approach', 2500);
+  } else if (ch.draw_line === 'kakum-bridges-draw') {
+    animateBridgesStaggered(180);
+  } else {
+    const animSrc = map.getSource('kakum-animated-trail-source');
+    if (animSrc) {
+      animSrc.setData({ type: 'FeatureCollection', features: [] });
+    }
+  }
+
+  // 6. Dash-Flow (Rule 5 & §5.2)
+  if (ch.ambient && ch.ambient.dash_flow) {
+    startDashFlow();
+  } else {
+    stopDashFlow();
+  }
+
+  // 7. Vertical Stratum Link (Doc 09 §7, fixes D8)
+  if (ch.stratum_ref !== undefined) {
+    document.querySelectorAll('.vertical-stratum-card').forEach((c, i) => {
+      if (i === ch.stratum_ref) c.classList.add('active');
+      else c.classList.remove('active');
+    });
+  }
+
+  // 8. Mark active step in overlay
+  document.querySelectorAll('.story-step').forEach((s, idx) => {
+    if (idx === index + 1) s.classList.add('is-active');
+    else s.classList.remove('is-active');
+  });
+
+  // 9. If not triggered by scroll, scroll overlay into view
+  if (opts.source !== 'scroll' && state.storyOverlayActive) {
+    const cardEl = document.getElementById(`story-step-${index + 1}`);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  // 10. Update URL hash cleanly (deep-linking)
+  const targetHash = `#/central/kakum-national-park/story/act-${index + 1}`;
+  if (window.location.hash !== targetHash && opts.source !== 'hash') {
+    history.replaceState(null, '', targetHash);
+  }
+}
+
+// Render Chapter Card in Sidebar
 function renderStoryChapter(index) {
   const chapters = state.siteData ? state.siteData.story_chapters : null;
   if (!chapters || !chapters[index]) return;
@@ -1565,6 +2433,15 @@ function renderStoryChapter(index) {
           <span>Act ${ch.act_number} of ${total}</span>
         </div>
       </div>
+
+      ${ch.media && ch.media.image ? `
+        <div class="rounded-xl overflow-hidden border border-gray-200 relative group shadow-2xs">
+          <img src="${ch.media.image}" alt="${ch.act_title}" class="w-full h-36 object-cover" onerror="this.src='/static/img/attractions/kakum-national-park/hero.jpg'" />
+          <div class="absolute bottom-1 right-2 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded backdrop-blur-xs font-mono">
+            ${ch.media.credit || 'CC BY-SA'}
+          </div>
+        </div>
+      ` : ''}
 
       <p class="text-xs text-gray-700 leading-relaxed">
         ${ch.narrative}
@@ -1598,6 +2475,24 @@ function renderStoryChapter(index) {
         </div>
       </div>
 
+      ${ch.narrative_sources && ch.narrative_sources.length > 0 ? `
+        <details class="text-[10px] text-gray-500 bg-gray-50 p-2 rounded-lg border border-gray-200">
+          <summary class="font-bold text-gray-700 cursor-pointer flex items-center justify-between select-none">
+            <span>📋 Verified Narrative Citations (${ch.narrative_sources.length})</span>
+            <span class="text-emerald-700 font-bold">Rule 6 Verified</span>
+          </summary>
+          <div class="space-y-1 mt-1.5 pt-1.5 border-t border-gray-200">
+            ${ch.narrative_sources.map(ns => `
+              <div class="leading-tight">
+                <strong class="text-gray-800">&bull; ${ns.claim}:</strong>
+                <span class="text-gray-600">${ns.source}</span>
+                <span class="text-gray-400 font-mono">(${ns.verified_date})</span>
+              </div>
+            `).join('')}
+          </div>
+        </details>
+      ` : ''}
+
       <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs font-semibold">
         <button 
           type="button" 
@@ -1609,11 +2504,11 @@ function renderStoryChapter(index) {
 
         <button 
           type="button" 
-          onclick="goToStoryChapter(${index})"
-          class="text-emerald-700 hover:bg-emerald-50 py-1.5 px-2.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
-          title="Refocus camera on this act's coordinates"
+          onclick="openStoryOverlay(${index + 1})"
+          class="text-emerald-700 hover:bg-emerald-50 py-1.5 px-2.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center space-x-1"
+          title="Expand to Full-Viewport 3D StoryMap"
         >
-          <span>🗺️ Refocus</span>
+          <span>✨ Fullscreen</span>
         </button>
 
         <button 
@@ -1628,55 +2523,21 @@ function renderStoryChapter(index) {
   `;
 }
 
-function goToStoryChapter(index) {
-  const chapters = state.siteData ? state.siteData.story_chapters : null;
-  if (!chapters || index < 0 || index >= chapters.length) return;
-
-  state.currentStoryChapterIndex = index;
-  closeAllPopups();
-
-  for (let i = 0; i < chapters.length; i++) {
-    const dot = document.getElementById(`story-dot-${i}`);
-    if (dot) {
-      if (i === index) dot.classList.add('active');
-      else dot.classList.remove('active');
-    }
+// Keyboard Navigation for StoryMap Overlay
+window.addEventListener('keydown', (e) => {
+  if (!state.storyOverlayActive) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') {
+    e.preventDefault();
+    const nextIdx = Math.min(5, (state.currentStoryStepIndex || 0) + 1);
+    jumpToStoryStep(nextIdx);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+    e.preventDefault();
+    const prevIdx = Math.max(0, (state.currentStoryStepIndex || 0) - 1);
+    jumpToStoryStep(prevIdx);
+  } else if (e.key === 'Escape') {
+    closeStoryOverlay();
   }
-
-  renderStoryChapter(index);
-
-  const ch = chapters[index];
-  const sidebarWidth = window.innerWidth >= 768 ? 440 : 0;
-
-  map.flyTo({
-    center: ch.camera.center,
-    zoom: ch.camera.zoom,
-    pitch: ch.camera.pitch || 35,
-    bearing: ch.camera.bearing || 0,
-    padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
-    duration: 1600,
-    essential: true
-  });
-
-  const allLayers = ['kakum-parking-fill', 'kakum-buildings-fill', 'kakum-paved-line', 'kakum-trail-line'];
-  allLayers.forEach(lyr => {
-    if (map.getLayer(lyr)) {
-      if (ch.highlight_layers && ch.highlight_layers.includes(lyr)) {
-        if (lyr.includes('line')) {
-          map.setPaintProperty(lyr, 'line-width', 5);
-        } else if (lyr.includes('fill')) {
-          map.setPaintProperty(lyr, 'fill-opacity', 0.65);
-        }
-      } else {
-        if (lyr.includes('line')) {
-          map.setPaintProperty(lyr, 'line-width', 3);
-        } else if (lyr.includes('fill')) {
-          map.setPaintProperty(lyr, 'fill-opacity', 0.35);
-        }
-      }
-    }
-  });
-}
+});
 
 function renderVerticalStratification(strata) {
   const container = document.getElementById('vertical-strata-list');
@@ -1766,7 +2627,7 @@ function focusVerticalStratum(idx) {
   }
 }
 
-async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national-park') {
+async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national-park', initialSubMode = 'story', targetAct = null) {
   state.currentTier = 'site';
   state.selectedRegionId = regionId;
   state.selectedSiteId = siteSlug;
@@ -1777,11 +2638,6 @@ async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national
   // Hide regional legend card to free up map space
   const regLeg = document.getElementById('region-legend-card');
   if (regLeg) regLeg.classList.add('hidden');
-
-  // Update hash without triggering redundant loop
-  if (window.location.hash !== `#/${regionId}/${siteSlug}/console`) {
-    window.location.hash = `#/${regionId}/${siteSlug}/console`;
-  }
 
   // Toggle sidebar panels
   const nationalPanel = document.getElementById('national-panel');
@@ -1828,20 +2684,8 @@ async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national
     const data = await res.json();
     state.siteData = data;
 
-    // Fly camera directly to Visitor Hub at zoom 18.0 with left padding to avoid sidebar crowding
-    const sidebarWidth = window.innerWidth >= 768 ? 440 : 20;
-    map.flyTo({
-      center: [-1.38355, 5.34885],
-      zoom: 18.0,
-      pitch: 35,
-      bearing: -10,
-      padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
-      duration: 1600,
-      essential: true
-    });
-
-    // Render Micro-Spatial Vector Layers (Parking, Buildings, Concourse, Trails)
-    setupMicroSpatialLayers(data.geojson);
+    // Render Micro-Spatial Vector Layers (Parking, Buildings, Concourse, Trails, 7 Bridges, Boundary)
+    await setupMicroSpatialLayers(data.geojson);
 
     // Render HTML Markers on Map
     renderMicroMarkers(data.geojson);
@@ -1856,8 +2700,20 @@ async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national
     renderDisputedSpecsTab(data.disputed_specifications);
     renderSafetyTab(data.physical_safety_protocols, data.official_contacts);
 
-    // Switch to initial sub-mode (StoryMap by default)
-    switchSiteSubMode(state.siteSubMode || 'story');
+    if (initialSubMode === 'story') {
+      let targetStep = 0;
+      if (targetAct) {
+        if (targetAct.startsWith('act-')) {
+          targetStep = parseInt(targetAct.replace('act-', ''), 10);
+        } else if (!isNaN(parseInt(targetAct, 10))) {
+          targetStep = parseInt(targetAct, 10);
+        }
+      }
+      openStoryOverlay(targetStep);
+    } else {
+      switchSiteSubMode('explorer');
+      focusSiteZone('hub');
+    }
 
   } catch (err) {
     console.error('Error in enterSiteConsole:', err);
@@ -1906,10 +2762,58 @@ function exitSiteConsole(updateHash = true) {
 }
 
 
-function setupMicroSpatialLayers(geojson) {
+async function setupMicroSpatialLayers(geojson) {
+  // 1. Boundary Polygon Layer (375 km² Macro Context, Doc 09 Act I)
+  try {
+    const bRes = await fetch('/api/attractions/kakum-national-park/boundary');
+    if (bRes.ok) {
+      const bData = await bRes.json();
+      if (!map.getSource('kakum-boundary-source')) {
+        map.addSource('kakum-boundary-source', {
+          type: 'geojson',
+          data: bData
+        });
+
+        map.addLayer({
+          id: 'kakum-boundary-fill',
+          type: 'fill',
+          source: 'kakum-boundary-source',
+          paint: {
+            'fill-color': '#059669',
+            'fill-opacity': 0.10
+          }
+        }, 'kakum-hillshade');
+
+        map.addLayer({
+          id: 'kakum-boundary-line',
+          type: 'line',
+          source: 'kakum-boundary-source',
+          paint: {
+            'line-color': '#10b981',
+            'line-width': 2.5,
+            'line-opacity': 0.85
+          }
+        });
+      } else {
+        map.getSource('kakum-boundary-source').setData(bData);
+        ['kakum-boundary-fill', 'kakum-boundary-line'].forEach(id => {
+          if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
+        });
+      }
+    }
+  } catch (bErr) {
+    console.warn('Boundary polygon load notice:', bErr);
+  }
+
+  // 2. Micro-Spatial Source & Vector Layers
   if (map.getSource('kakum-micro-source')) {
     map.getSource('kakum-micro-source').setData(geojson);
-    ['kakum-parking-fill', 'kakum-parking-line', 'kakum-buildings-fill', 'kakum-buildings-line', 'kakum-paved-line', 'kakum-trail-line'].forEach(id => {
+    [
+      'kakum-parking-fill', 'kakum-parking-line', 
+      'kakum-buildings-fill', 'kakum-buildings-line', 
+      'kakum-paved-line', 'kakum-trail-line',
+      'kakum-bridges-glow', 'kakum-bridges-line'
+    ].forEach(id => {
       if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
     });
     return;
@@ -1920,7 +2824,7 @@ function setupMicroSpatialLayers(geojson) {
     data: geojson
   });
 
-  // 1. Parking fill
+  // Parking fill
   map.addLayer({
     id: 'kakum-parking-fill',
     type: 'fill',
@@ -1932,7 +2836,7 @@ function setupMicroSpatialLayers(geojson) {
     }
   });
 
-  // 2. Parking outline
+  // Parking outline
   map.addLayer({
     id: 'kakum-parking-line',
     type: 'line',
@@ -1944,7 +2848,7 @@ function setupMicroSpatialLayers(geojson) {
     }
   });
 
-  // 3. Buildings fill (Museum, Toilets)
+  // Buildings fill (Museum, Toilets)
   map.addLayer({
     id: 'kakum-buildings-fill',
     type: 'fill',
@@ -1956,7 +2860,7 @@ function setupMicroSpatialLayers(geojson) {
     }
   });
 
-  // 4. Buildings outline
+  // Buildings outline
   map.addLayer({
     id: 'kakum-buildings-line',
     type: 'line',
@@ -1968,7 +2872,7 @@ function setupMicroSpatialLayers(geojson) {
     }
   });
 
-  // 5. Paved paths line
+  // Paved concourse line
   map.addLayer({
     id: 'kakum-paved-line',
     type: 'line',
@@ -1981,7 +2885,7 @@ function setupMicroSpatialLayers(geojson) {
     }
   });
 
-  // 6. Canopy approach trail line
+  // Canopy approach trail line
   map.addLayer({
     id: 'kakum-trail-line',
     type: 'line',
@@ -1992,10 +2896,74 @@ function setupMicroSpatialLayers(geojson) {
       'line-width': 3
     }
   });
+
+  // 7-Bridge Canopy Walkway Layers (Doc 09 §5.1 / §5.2)
+  map.addLayer({
+    id: 'kakum-bridges-glow',
+    type: 'line',
+    source: 'kakum-micro-source',
+    filter: ['==', ['get', 'category'], 'canopy_bridge'],
+    paint: {
+      'line-color': '#065f46',
+      'line-width': 9,
+      'line-blur': 3,
+      'line-opacity': 0.85
+    }
+  });
+
+  map.addLayer({
+    id: 'kakum-bridges-line',
+    type: 'line',
+    source: 'kakum-micro-source',
+    filter: ['==', ['get', 'category'], 'canopy_bridge'],
+    paint: {
+      'line-color': '#34d399',
+      'line-width': 4.5,
+      'line-opacity': 1.0
+    }
+  });
+
+  // Progressive Animated Line-Draw Source & Layers
+  if (!map.getSource('kakum-animated-trail-source')) {
+    map.addSource('kakum-animated-trail-source', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] }
+    });
+
+    map.addLayer({
+      id: 'kakum-animated-trail-glow',
+      type: 'line',
+      source: 'kakum-animated-trail-source',
+      paint: {
+        'line-color': '#065f46',
+        'line-width': 9,
+        'line-blur': 3,
+        'line-opacity': 0.9
+      }
+    });
+
+    map.addLayer({
+      id: 'kakum-animated-trail-line',
+      type: 'line',
+      source: 'kakum-animated-trail-source',
+      paint: {
+        'line-color': '#34d399',
+        'line-width': 4.5,
+        'line-opacity': 1.0
+      }
+    });
+  }
 }
 
 function removeMicroSpatialLayers() {
-  ['kakum-parking-fill', 'kakum-parking-line', 'kakum-buildings-fill', 'kakum-buildings-line', 'kakum-paved-line', 'kakum-trail-line'].forEach(id => {
+  [
+    'kakum-boundary-fill', 'kakum-boundary-line',
+    'kakum-parking-fill', 'kakum-parking-line', 
+    'kakum-buildings-fill', 'kakum-buildings-line', 
+    'kakum-paved-line', 'kakum-trail-line',
+    'kakum-bridges-glow', 'kakum-bridges-line',
+    'kakum-animated-trail-glow', 'kakum-animated-trail-line'
+  ].forEach(id => {
     if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
   });
 }

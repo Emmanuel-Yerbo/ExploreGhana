@@ -28,9 +28,12 @@
     }
   </script>
 
-  <!-- MapLibre GL JS v4 -->
-  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <!-- MapLibre GL JS v5 & 3D Terrain Support -->
+  <link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+
+  <!-- Vendored Scrollama 2.2.1 Scrollytelling Engine -->
+  <script src="/static/js/vendor/scrollama.min.js"></script>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -264,6 +267,17 @@
 
           <!-- CONTAINER 1: Spatial StoryMap Journey (Scrollytelling Mode) -->
           <div id="site-story-container" class="flex-1 overflow-y-auto p-4 space-y-3.5 bg-gray-50/70">
+            <!-- Launch Fullscreen Scrollytelling Overlay Banner -->
+            <button type="button" onclick="openStoryOverlay()" class="w-full py-2.5 px-3.5 bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl font-black text-xs shadow-md border border-emerald-500/40 flex items-center justify-between transition-all cursor-pointer group">
+              <span class="flex items-center space-x-2">
+                <span>✨</span>
+                <span>Launch Fullscreen 3D StoryMap</span>
+              </span>
+              <span class="text-[10px] bg-emerald-950/80 px-2 py-0.5 rounded-lg border border-emerald-500/50 group-hover:bg-emerald-600 transition-colors">
+                Overlay Mode ↗
+              </span>
+            </button>
+
             <!-- Chapter Timeline Dots & Soundscape Header -->
             <div class="bg-emerald-950 text-white p-3 rounded-xl border border-emerald-800 space-y-2.5 shadow-sm">
               <div class="flex items-center justify-between">
@@ -450,14 +464,68 @@
             Data: <a href="https://www.geoboundaries.org" target="_blank" rel="noreferrer" class="underline hover:text-gray-600">geoBoundaries</a> · 
             <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" class="underline hover:text-gray-600">OSM</a> · 
             <a href="https://commons.wikimedia.org" target="_blank" rel="noreferrer" class="underline hover:text-gray-600">Wikimedia Commons (CC)</a> · 
+            AWS Terrarium 3D DEM · 
+            Scrollama · 
             Esri
           </div>
         </div>
       </aside>
 
       <!-- Map Viewport -->
-      <main class="flex-1 h-full w-full relative">
+      <main class="flex-1 h-full w-full relative overflow-hidden">
         <div id="map" class="h-full w-full"></div>
+
+        <!-- Tier-4 Kakum 3D StoryMap Scrollytelling Overlay (Doc 09) -->
+        <div id="storymap-overlay" class="hidden absolute inset-0 z-30 pointer-events-none flex flex-col justify-between overflow-hidden">
+          
+          <!-- Top Floating Story Navigation HUD -->
+          <div id="story-hud-header" class="pointer-events-auto bg-gradient-to-b from-gray-950/95 via-gray-950/80 to-transparent p-3 sm:px-6 pt-3 pb-6 flex flex-col space-y-2.5 z-40 transition-all">
+            <div class="flex items-center justify-between">
+              <!-- Exit / Back to Console Button -->
+              <button type="button" id="btn-exit-story-overlay" onclick="closeStoryOverlay()" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 border border-white/20 backdrop-blur-md cursor-pointer">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                <span>Exit to Explorer Console</span>
+              </button>
+
+              <!-- Central Act Jump Pills -->
+              <div class="hidden sm:flex items-center space-x-1.5 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15">
+                <button type="button" onclick="jumpToStoryStep(0)" id="hud-dot-0" class="story-step-dot text-[10px]" title="Intro">Intro</button>
+                <div class="h-0.5 w-2 bg-emerald-800"></div>
+                <button type="button" onclick="jumpToStoryStep(1)" id="hud-dot-1" class="story-step-dot" title="Act I: The Island of Green">1</button>
+                <div class="h-0.5 w-2 bg-emerald-800"></div>
+                <button type="button" onclick="jumpToStoryStep(2)" id="hud-dot-2" class="story-step-dot" title="Act II: The Threshold">2</button>
+                <div class="h-0.5 w-2 bg-emerald-800"></div>
+                <button type="button" onclick="jumpToStoryStep(3)" id="hud-dot-3" class="story-step-dot" title="Act III: The Ascent">3</button>
+                <div class="h-0.5 w-2 bg-emerald-800"></div>
+                <button type="button" onclick="jumpToStoryStep(4)" id="hud-dot-4" class="story-step-dot" title="Act IV: Suspended in the Crown">4</button>
+                <div class="h-0.5 w-2 bg-emerald-800"></div>
+                <button type="button" onclick="jumpToStoryStep(5)" id="hud-dot-5" class="story-step-dot" title="Act V: Beyond the Wires">5</button>
+              </div>
+
+              <!-- Soundscape Audio Toggle & 3D indicator -->
+              <div class="flex items-center space-x-2">
+                <button type="button" id="hud-soundscape-btn" onclick="toggleRainforestSound()" class="bg-emerald-900/80 hover:bg-emerald-800 text-emerald-200 border border-emerald-600/50 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 backdrop-blur-md cursor-pointer">
+                  <span id="hud-soundscape-icon">🔇</span>
+                  <span id="hud-soundscape-label" class="hidden md:inline">Rainforest Audio</span>
+                </button>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2 py-1 rounded-lg font-bold flex items-center space-x-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>3D Terrain</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Story Progress Rail along top -->
+            <div class="w-full story-progress-rail">
+              <div id="story-progress-bar" class="story-progress-bar-fill"></div>
+            </div>
+          </div>
+
+          <!-- Floating Narrative Scrollytelling Track -->
+          <div id="story-scroll-container" class="pointer-events-auto flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-8 flex flex-col items-center md:items-start space-y-[45vh] scroll-smooth">
+            <!-- Dynamically populated via renderStoryOverlay() in app.js -->
+          </div>
+        </div>
 
         <!-- Map Layer Switcher Floating Widget -->
         <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm p-1.5 rounded-xl shadow-lg border border-gray-200 z-10 flex flex-col space-y-1 text-xs">

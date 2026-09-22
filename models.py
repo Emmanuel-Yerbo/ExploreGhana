@@ -102,6 +102,13 @@ class StoryChapter(BaseModel):
     proverb: str
     ecological_focus: str
     cultural_heritage: str
+    focus_features: Optional[List[str]] = None
+    draw_line: Optional[str] = None
+    ambient: Optional[Dict[str, Any]] = None
+    stratum_ref: Optional[int] = None
+    media: Optional[Dict[str, Any]] = None
+    narrative_sources: Optional[List[Dict[str, Any]]] = None
+
 
 class VerticalStratum(BaseModel):
     stratum: str

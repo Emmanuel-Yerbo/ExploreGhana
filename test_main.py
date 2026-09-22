@@ -465,5 +465,38 @@ class TestMicroSpatial:
         assert "elderly" in elig_ids
         assert "rain" in elig_ids
 
+    def test_kakum_boundary_endpoint(self):
+        r = client.get("/api/attractions/kakum-national-park/boundary")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["type"] == "FeatureCollection"
+        assert len(data["features"]) >= 1
+        poly = data["features"][0]
+        assert poly["geometry"]["type"] in ["Polygon", "MultiPolygon"]
+        assert "Kakum National Park" in poly["properties"]["name"]
+
+    def test_kakum_7_bridges_present_in_geojson(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        features = r.json()["geojson"]["features"]
+        bridge_features = [f for f in features if f["properties"].get("category") == "canopy_bridge"]
+        assert len(bridge_features) == 7
+        bridge_indices = {f["properties"]["bridge_index"] for f in bridge_features}
+        assert bridge_indices == {1, 2, 3, 4, 5, 6, 7}
+
+    def test_story_chapters_extended_attributes(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        chapters = r.json()["story_chapters"]
+        for ch in chapters:
+            assert "camera" in ch
+            assert "transition" in ch["camera"]
+            assert "focus_features" in ch
+            assert "media" in ch
+            assert "image" in ch["media"]
+            assert "narrative_sources" in ch
+            assert len(ch["narrative_sources"]) >= 1
+
+
 
 
