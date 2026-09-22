@@ -1,7 +1,11 @@
-// ExploreGhana — Frontend Application Logic
+// ExploreGhana — Frontend Application Logic (V1.1 Multi-Scale Spatial Hierarchy)
 
 // Application State
 const state = {
+  currentTier: 'national', // 'national' | 'regional'
+  selectedRegionId: null,  // 'central', etc.
+  regions: [],             // All 16 regions loaded from /api/regions
+  districts: [],           // Central districts loaded from /api/regions/central/districts
   attractions: [],
   filtered: [],
   selectedId: null,
@@ -9,9 +13,18 @@ const state = {
   searchQuery: '',
   userLocation: null,
   markers: {},
+  regionBadges: {},
   userMarker: null,
   showBoundary: true,
   currentBasemap: 'streets'
+};
+
+// National View Configuration
+const NATIONAL_VIEW = {
+  center: [-1.02, 7.94], // Geographical center of Ghana
+  zoom: 6.3,
+  bearing: 0,
+  pitch: 0
 };
 
 // MapLibre Basemap Tile Styles
@@ -78,9 +91,9 @@ const CATEGORY_META = {
 const map = new maplibregl.Map({
   container: 'map',
   style: BASEMAP_STYLES.streets,
-  center: [-1.2464, 5.1053], // Cape Coast coordinates
-  zoom: 9.8,
-  minZoom: 6,
+  center: NATIONAL_VIEW.center,
+  zoom: NATIONAL_VIEW.zoom,
+  minZoom: 5.5,
   maxZoom: 18
 });
 
@@ -90,49 +103,125 @@ map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), '
 
 // Map Load Event Handler
 map.on('load', async () => {
-  await loadRegionBoundary();
+  await loadRegionsData();
+  await loadDistrictsData();
   await fetchAttractions();
   setupEventListeners();
+  handleHashChange(); // Initialize view state from URL hash
   lucide.createIcons();
 });
 
-// Load Central Region Boundary GeoJSON
-async function loadRegionBoundary() {
+// Listen to URL hash routing for SPA deep-linking and browser back/forward buttons
+window.addEventListener('hashchange', handleHashChange);
+
+// ---------------------------------------------------------------------------
+// 1. Data Ingestion & Map Layer Management
+// ---------------------------------------------------------------------------
+
+// Load all 16 Ghana Regions
+async function loadRegionsData() {
   try {
     const res = await fetch('/api/regions');
     const geojsonData = await res.json();
+    state.regions = geojsonData.features || [];
 
-    if (!map.getSource('central-region-boundary')) {
-      map.addSource('central-region-boundary', {
+    if (!map.getSource('ghana-regions-source')) {
+      map.addSource('ghana-regions-source', {
         type: 'geojson',
         data: geojsonData
       });
 
-      // Polygon fill
+      // 1. Region Fill Layer (Dimming other regions when one is selected)
       map.addLayer({
-        id: 'central-region-fill',
+        id: 'regions-fill',
         type: 'fill',
-        source: 'central-region-boundary',
+        source: 'ghana-regions-source',
         paint: {
-          'fill-color': '#006B3F',
+          'fill-color': [
+            'case',
+            ['==', ['get', 'region_id'], 'central'], '#006B3F',
+            '#2D3748'
+          ],
           'fill-opacity': 0.08
         }
       });
 
-      // Polygon border line
+      // 2. Region Outline Layer
       map.addLayer({
-        id: 'central-region-outline',
+        id: 'regions-outline',
         type: 'line',
-        source: 'central-region-boundary',
+        source: 'ghana-regions-source',
+        paint: {
+          'line-color': [
+            'case',
+            ['==', ['get', 'region_id'], 'central'], '#006B3F',
+            '#CBD5E0'
+          ],
+          'line-width': 2.0
+        }
+      });
+
+      // Region Click Handler
+      map.on('click', 'regions-fill', (e) => {
+        if (!e.features || e.features.length === 0) return;
+        const regionId = e.features[0].properties.region_id;
+        if (regionId === 'central') {
+          window.location.hash = '#/central';
+        } else {
+          const name = e.features[0].properties.name;
+          showToast(`📌 ${name}: Attractions dataset scheduled for upcoming roadmap release.`);
+          // Still fly to region bounds
+          const region = state.regions.find(r => r.properties.region_id === regionId);
+          if (region && region.properties.bbox) {
+            const [minx, miny, maxx, maxy] = region.properties.bbox;
+            map.fitBounds([[minx, miny], [maxx, maxy]], { padding: 40, duration: 1400 });
+          }
+        }
+      });
+
+      // Cursor changes on hover
+      map.on('mouseenter', 'regions-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'regions-fill', () => { map.getCanvas().style.cursor = ''; });
+    }
+
+    renderNationalRegionsList();
+    renderRegionBadges();
+  } catch (err) {
+    console.error('Failed to load regions GeoJSON:', err);
+  }
+}
+
+// Load Central Region Districts (ADM2)
+async function loadDistrictsData() {
+  try {
+    const res = await fetch('/api/regions/central/districts');
+    const geojsonData = await res.json();
+    state.districts = geojsonData.features || [];
+
+    if (!map.getSource('central-districts-source')) {
+      map.addSource('central-districts-source', {
+        type: 'geojson',
+        data: geojsonData
+      });
+
+      // District boundaries line
+      map.addLayer({
+        id: 'districts-line',
+        type: 'line',
+        source: 'central-districts-source',
+        layout: {
+          'visibility': 'none' // Hidden by default at national scale
+        },
         paint: {
           'line-color': '#006B3F',
-          'line-width': 2.5,
-          'line-dasharray': [3, 2]
+          'line-width': 1.2,
+          'line-dasharray': [3, 2],
+          'line-opacity': 0.6
         }
       });
     }
   } catch (err) {
-    console.error('Failed to load boundary GeoJSON:', err);
+    console.error('Failed to load districts GeoJSON:', err);
   }
 }
 
@@ -143,14 +232,301 @@ async function fetchAttractions() {
     state.attractions = await res.json();
     state.filtered = [...state.attractions];
     renderAttractionsList();
-    renderMarkers();
   } catch (err) {
     console.error('Error fetching attractions:', err);
   }
 }
 
+// ---------------------------------------------------------------------------
+// 2. Multi-Scale Hierarchy & Camera Navigation
+// ---------------------------------------------------------------------------
+
+// Hash Change Handler (SPA Deep Linking)
+function handleHashChange() {
+  const hash = window.location.hash || '#/';
+  const clean = hash.replace(/^#\/?/, '');
+  const parts = clean ? clean.split('/') : [];
+
+  const regionSlug = parts[0] || null;
+  const siteSlug = parts[1] || null;
+
+  if (!regionSlug) {
+    transitionToTier('national');
+  } else if (regionSlug === 'central') {
+    transitionToTier('regional', 'central');
+    if (siteSlug) {
+      openModal(siteSlug);
+    } else {
+      closeModal();
+    }
+  } else {
+    transitionToTier('regional', regionSlug);
+  }
+}
+
+// Transition between National and Regional Tiers
+function transitionToTier(tier, regionId = null) {
+  state.currentTier = tier;
+  state.selectedRegionId = regionId;
+
+  const nationalPanel = document.getElementById('national-panel');
+  const regionalPanel = document.getElementById('regional-panel');
+  const bcSepRegion = document.getElementById('bc-sep-region');
+  const bcRegion = document.getElementById('bc-region');
+  const bcSepAttraction = document.getElementById('bc-sep-attraction');
+  const bcAttraction = document.getElementById('bc-attraction');
+
+  if (tier === 'national') {
+    // 1. Sidebar Panels
+    nationalPanel.classList.remove('hidden');
+    regionalPanel.classList.add('hidden');
+
+    // 2. Breadcrumbs
+    bcSepRegion.classList.add('hidden');
+    bcRegion.classList.add('hidden');
+    bcSepAttraction.classList.add('hidden');
+    bcAttraction.classList.add('hidden');
+
+    // 3. Map Styling & Boundaries
+    updateRegionDimming(null);
+    setDistrictsVisibility(false);
+    hideSiteMarkers();
+    showRegionBadges();
+
+    // 4. Camera Ease to National View
+    map.flyTo({
+      center: NATIONAL_VIEW.center,
+      zoom: NATIONAL_VIEW.zoom,
+      pitch: 0,
+      bearing: 0,
+      duration: 1500,
+      essential: true
+    });
+
+  } else if (tier === 'regional') {
+    // 1. Sidebar Panels
+    nationalPanel.classList.add('hidden');
+    regionalPanel.classList.remove('hidden');
+
+    // 2. Breadcrumbs
+    bcSepRegion.classList.remove('hidden');
+    bcRegion.classList.remove('hidden');
+    const regObj = state.regions.find(r => r.properties.region_id === regionId);
+    bcRegion.innerText = regObj ? regObj.properties.name : 'Central Region';
+
+    // 3. Map Styling & Boundaries
+    updateRegionDimming(regionId);
+    setDistrictsVisibility(regionId === 'central');
+    hideRegionBadges();
+    showSiteMarkers();
+
+    // 4. Camera Ease to Region Bounds
+    if (regObj && regObj.properties.bbox) {
+      const [minx, miny, maxx, maxy] = regObj.properties.bbox;
+      const sidebarWidth = window.innerWidth >= 768 ? 440 : 20;
+      map.fitBounds([[minx, miny], [maxx, maxy]], {
+        padding: { top: 40, bottom: 40, left: sidebarWidth, right: 40 },
+        maxZoom: 10.2,
+        duration: 1600
+      });
+    }
+  }
+
+  lucide.createIcons();
+}
+
+// Update MapLibre Paint Properties for Region Dimming
+function updateRegionDimming(activeRegionId) {
+  if (!map.getLayer('regions-fill')) return;
+
+  if (!activeRegionId) {
+    // National View: subtle tint, Central slightly prominent
+    map.setPaintProperty('regions-fill', 'fill-opacity', [
+      'case',
+      ['==', ['get', 'region_id'], 'central'], 0.16,
+      0.08
+    ]);
+    map.setPaintProperty('regions-fill', 'fill-color', [
+      'case',
+      ['==', ['get', 'region_id'], 'central'], '#006B3F',
+      '#4A5568'
+    ]);
+    map.setPaintProperty('regions-outline', 'line-color', [
+      'case',
+      ['==', ['get', 'region_id'], 'central'], '#FCD116',
+      '#A0AEC0'
+    ]);
+  } else {
+    // Regional View: Active region remains vibrant, other 15 regions dimmed to 45% dark mask
+    map.setPaintProperty('regions-fill', 'fill-opacity', [
+      'case',
+      ['==', ['get', 'region_id'], activeRegionId], 0.05,
+      0.55 // Dimming mask
+    ]);
+    map.setPaintProperty('regions-fill', 'fill-color', [
+      'case',
+      ['==', ['get', 'region_id'], activeRegionId], '#006B3F',
+      '#1A202C' // Dark dimming overlay
+    ]);
+    map.setPaintProperty('regions-outline', 'line-color', [
+      'case',
+      ['==', ['get', 'region_id'], activeRegionId], '#006B3F',
+      '#2D3748'
+    ]);
+  }
+}
+
+// Toggle District Boundary visibility
+function setDistrictsVisibility(visible) {
+  if (map.getLayer('districts-line')) {
+    map.setLayoutProperty('districts-line', 'visibility', visible ? 'visible' : 'none');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 3. UI Component Renderers
+// ---------------------------------------------------------------------------
+
+// Render National 16 Regions Deck in Sidebar
+function renderNationalRegionsList() {
+  const container = document.getElementById('regions-list');
+  if (!container || !state.regions.length) return;
+
+  container.innerHTML = state.regions.map(r => {
+    const p = r.properties;
+    const isPilot = p.region_id === 'central';
+    const isV12 = p.region_id === 'ashanti';
+
+    let badgeHtml = '';
+    if (isPilot) {
+      badgeHtml = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+        <span>Active Pilot &bull; 20 Sites</span>
+      </span>`;
+    } else if (isV12) {
+      badgeHtml = `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+        Planned V1.2
+      </span>`;
+    } else {
+      badgeHtml = `<span class="bg-gray-100 text-gray-500 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+        Roadmap
+      </span>`;
+    }
+
+    return `
+      <div 
+        onclick="navigateToRegion('${p.region_id}')"
+        class="region-card p-3.5 rounded-xl border transition-all cursor-pointer ${
+          isPilot 
+            ? 'bg-white border-emerald-300 shadow-md hover:border-emerald-500 hover:shadow-lg ring-1 ring-emerald-500/20' 
+            : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm opacity-90 hover:opacity-100'
+        }"
+      >
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-bold text-sm text-gray-900 flex items-center space-x-1.5">
+              <span>${p.name}</span>
+            </h3>
+            <p class="text-xs text-gray-500 mt-0.5 flex items-center space-x-1">
+              <i data-lucide="building" class="w-3 h-3 text-gray-400"></i>
+              <span>Capital: <strong>${p.capital}</strong></span>
+            </p>
+          </div>
+          <div>
+            ${badgeHtml}
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-600 mt-2 line-clamp-2 leading-relaxed">
+          ${p.tagline}
+        </p>
+
+        <div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs">
+          <span class="text-[11px] text-gray-400">
+            ${isPilot ? 'Cape Coast &bull; Kakum &bull; Elmina' : 'ADM1 Region'}
+          </span>
+          <span class="${isPilot ? 'text-ghana-green font-bold flex items-center space-x-1' : 'text-gray-400 font-medium'}">
+            <span>${isPilot ? 'Explore Region &rarr;' : 'View Bounds'}</span>
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  lucide.createIcons();
+}
+
+// Navigate to Region
+function navigateToRegion(regionId) {
+  if (regionId === 'central') {
+    window.location.hash = '#/central';
+  } else {
+    const reg = state.regions.find(r => r.properties.region_id === regionId);
+    if (reg && reg.properties.bbox) {
+      const [minx, miny, maxx, maxy] = reg.properties.bbox;
+      map.fitBounds([[minx, miny], [maxx, maxy]], { padding: 40, duration: 1500 });
+      showToast(`📌 ${reg.properties.name}: Dataset curation scheduled for upcoming phase.`);
+    }
+  }
+}
+
+// Render National Floating Region Badges (e.g. Central Pilot Pill)
+function renderRegionBadges() {
+  const central = state.regions.find(r => r.properties.region_id === 'central');
+  if (!central) return;
+
+  const el = document.createElement('div');
+  el.className = 'region-badge-pill bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full shadow-xl border-2 border-ghana-gold flex items-center space-x-2 cursor-pointer hover:scale-105 transition-all text-xs font-bold text-gray-900 group';
+  el.innerHTML = `
+    <span class="w-2.5 h-2.5 rounded-full bg-ghana-green animate-pulse"></span>
+    <span class="group-hover:text-ghana-green transition-colors">Central Region</span>
+    <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-extrabold">20 Sites</span>
+  `;
+
+  el.addEventListener('click', () => {
+    window.location.hash = '#/central';
+  });
+
+  const marker = new maplibregl.Marker({ element: el })
+    .setLngLat([-1.2464, 5.1053])
+    .addTo(map);
+
+  state.regionBadges['central'] = marker;
+}
+
+function showRegionBadges() {
+  Object.values(state.regionBadges).forEach(m => {
+    m.getElement().style.display = 'flex';
+  });
+}
+
+function hideRegionBadges() {
+  Object.values(state.regionBadges).forEach(m => {
+    m.getElement().style.display = 'none';
+  });
+}
+
+function showSiteMarkers() {
+  renderMarkers();
+}
+
+function hideSiteMarkers() {
+  Object.values(state.markers).forEach(m => m.remove());
+  state.markers = {};
+}
+
+// ---------------------------------------------------------------------------
+// 4. Attractions Markers & List Rendering
+// ---------------------------------------------------------------------------
+
 // Render HTML Markers on Map
 function renderMarkers() {
+  // If in national tier, don't clutter map with site pins
+  if (state.currentTier === 'national') {
+    hideSiteMarkers();
+    return;
+  }
+
   // Clear existing markers
   Object.values(state.markers).forEach(m => m.remove());
   state.markers = {};
@@ -198,6 +574,8 @@ function renderMarkers() {
 function renderAttractionsList() {
   const container = document.getElementById('attractions-list');
   const countEl = document.getElementById('results-count');
+  if (!container || !countEl) return;
+
   countEl.innerText = `${state.filtered.length} Attraction${state.filtered.length === 1 ? '' : 's'}`;
 
   if (state.filtered.length === 0) {
@@ -283,17 +661,13 @@ function selectAttraction(id) {
     card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  // Highlight marker
-  document.querySelectorAll('.custom-pin').forEach(p => p.classList.remove('active'));
-  const pin = document.getElementById(`marker-${id}`);
-  if (pin) pin.classList.add('active');
-
-  // Fly to point on map
+  // Fly Map camera smoothly
   map.flyTo({
     center: [item.longitude, item.latitude],
-    zoom: 13,
-    pitch: 25,
-    speed: 1.2
+    zoom: 13.5,
+    pitch: 30,
+    speed: 1.2,
+    essential: true
   });
 
   // Open Popup
@@ -302,41 +676,48 @@ function selectAttraction(id) {
   }
 }
 
-// Open Full Detail Modal Drawer
+// ---------------------------------------------------------------------------
+// 5. Attraction Detail Modal
+// ---------------------------------------------------------------------------
+
+// Open Detailed Attraction Modal Drawer
 function openModal(id) {
   const item = state.attractions.find(a => a.id === id);
   if (!item) return;
 
+  // Update URL hash without pushing redundant history if already there
+  if (window.location.hash !== `#/central/${id}`) {
+    window.location.hash = `#/central/${id}`;
+  }
+
+  // Update Breadcrumbs
+  const bcSepAttraction = document.getElementById('bc-sep-attraction');
+  const bcAttraction = document.getElementById('bc-attraction');
+  if (bcSepAttraction && bcAttraction) {
+    bcSepAttraction.classList.remove('hidden');
+    bcAttraction.classList.remove('hidden');
+    bcAttraction.innerText = item.name;
+  }
+
   const modal = document.getElementById('detail-modal');
   const content = document.getElementById('modal-content');
-  const meta = CATEGORY_META[item.category] || { icon: '📍' };
+  const meta = CATEGORY_META[item.category] || { icon: '📍', label: item.category };
 
-  // Encode for WhatsApp Share
-  const shareText = encodeURIComponent(
-    `🇬🇭 Discover ${item.name} (${item.district}, Central Region) on ExploreGhana!\n` +
-    `Entry: GHS ${item.entry_fee_ghs.local_adult} (Residents) / GHS ${item.entry_fee_ghs.foreigner_adult} (Tourists)\n` +
-    `Google Maps: https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`
-  );
-
-  // Build gallery HTML if available
-  const hasGallery = item.gallery && item.gallery.length > 1;
-  const galleryStrip = hasGallery ? `
-    <!-- Visitor Photo Gallery Strip -->
-    <div class="px-6 pt-4 pb-1 border-b border-gray-100 bg-gray-50/50">
+  // Gallery thumbnails strip
+  const galleryStrip = (item.gallery && item.gallery.length > 0) ? `
+    <div class="mt-4 px-6">
       <div class="flex items-center justify-between mb-2">
-        <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center space-x-1.5">
-          <i data-lucide="camera" class="w-3.5 h-3.5 text-ghana-green"></i>
+        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center space-x-1.5">
+          <i data-lucide="camera" class="w-3.5 h-3.5 text-ghana-gold"></i>
           <span>Authentic Visitor Photos (${item.gallery.length})</span>
         </h4>
-        <span class="text-[10px] text-emerald-800 bg-emerald-100/90 font-bold px-2 py-0.5 rounded-full border border-emerald-300/40">
-          Creative Commons Verified
-        </span>
+        <span class="text-[10px] text-gray-400">Stored locally &bull; CC Licensed</span>
       </div>
-      <div class="flex space-x-2.5 overflow-x-auto pb-2 scrollbar-thin">
+      <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-thin">
         ${item.gallery.map((imgSrc, idx) => `
           <button 
-            type="button" 
-            onclick="switchModalImage('${imgSrc}', this)"
+            type="button"
+            onclick="switchModalHero('${imgSrc}', this)"
             class="modal-gallery-thumb flex-shrink-0 h-16 w-24 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shadow-sm ${idx === 0 ? 'border-ghana-green ring-2 ring-emerald-400/50 scale-105' : 'border-transparent opacity-75 hover:opacity-100'}"
           >
             <img src="${imgSrc}" onerror="this.onerror=null; this.src='/static/img/placeholder.svg';" class="w-full h-full object-cover" alt="Visitor shot ${idx + 1}" />
@@ -419,53 +800,55 @@ function openModal(id) {
         <div class="flex items-start space-x-2.5 p-3 rounded-xl bg-gray-50 border border-gray-200">
           <i data-lucide="car" class="w-4 h-4 text-ghana-green flex-shrink-0 mt-0.5"></i>
           <div>
-            <span class="font-bold text-gray-800 block">Road & Accessibility</span>
-            <span class="text-gray-600">${item.road_access.surface} (${item.road_access.vehicle_recommended})</span>
+            <span class="font-bold text-gray-800 block">Road Access & Vehicle</span>
+            <span class="text-gray-600">${item.road_access.surface} &bull; ${item.road_access.vehicle_recommended}</span>
           </div>
         </div>
 
         <div class="flex items-start space-x-2.5 p-3 rounded-xl bg-gray-50 border border-gray-200">
-          <i data-lucide="phone" class="w-4 h-4 text-ghana-green flex-shrink-0 mt-0.5"></i>
+          <i data-lucide="shield-alert" class="w-4 h-4 text-ghana-green flex-shrink-0 mt-0.5"></i>
           <div>
-            <span class="font-bold text-gray-800 block">Contact Information</span>
-            <span class="text-gray-600">${item.contact_phone || 'Ghana Tourism Authority'}</span>
+            <span class="font-bold text-gray-800 block">Rainy Season Passability</span>
+            <span class="${item.road_access.passable_rainy_season ? 'text-emerald-700' : 'text-rose-600'} font-semibold">
+              ${item.road_access.passable_rainy_season ? 'Passable Year-Round' : '4x4 Required in Rainy Season'}
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- What to bring checklist -->
+      <!-- What to Bring List -->
       ${item.what_to_bring && item.what_to_bring.length > 0 ? `
         <div>
-          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">RECOMMENDED TO BRING</h4>
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">WHAT TO BRING</h4>
           <div class="flex flex-wrap gap-1.5">
-            ${item.what_to_bring.map(t => `
-              <span class="bg-gray-100 text-gray-700 text-xs px-2.5 py-1 rounded-lg flex items-center space-x-1">
-                <i data-lucide="check-circle-2" class="w-3 h-3 text-ghana-green"></i>
-                <span>${t}</span>
+            ${item.what_to_bring.map(thing => `
+              <span class="bg-gray-100 text-gray-700 text-xs px-2.5 py-1 rounded-md border border-gray-200 flex items-center space-x-1">
+                <span>&bull;</span>
+                <span>${thing}</span>
               </span>
             `).join('')}
           </div>
         </div>
       ` : ''}
 
-      <!-- Action Buttons (WhatsApp Share & Google Maps Route) -->
-      <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center gap-3">
+      <!-- Action Buttons -->
+      <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
         <a 
-          href="https://wa.me/?text=${shareText}" 
-          target="_blank" 
-          class="w-full sm:w-1/2 bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition-all shadow-md"
+          href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" 
+          target="_blank"
+          class="flex-1 bg-ghana-green hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 shadow transition-all"
         >
-          <i data-lucide="share-2" class="w-4 h-4"></i>
-          <span>Share on WhatsApp</span>
+          <i data-lucide="navigation-2" class="w-4 h-4"></i>
+          <span>Get Driving Directions</span>
         </a>
 
         <a 
-          href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" 
-          target="_blank" 
-          class="w-full sm:w-1/2 bg-ghana-dark hover:bg-gray-800 text-white py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition-all shadow-md"
+          href="https://wa.me/?text=Check%20out%20${encodeURIComponent(item.name)}%20on%20ExploreGhana:%20${encodeURIComponent(window.location.origin + '/#/central/' + item.id)}"
+          target="_blank"
+          class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 border border-emerald-300 transition-all"
         >
-          <i data-lucide="navigation" class="w-4 h-4 text-ghana-gold"></i>
-          <span>Get Directions</span>
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+          <span>Share via WhatsApp</span>
         </a>
       </div>
 
@@ -477,26 +860,19 @@ function openModal(id) {
   lucide.createIcons();
 }
 
-// Switch Active Image in Modal Hero from Gallery Thumbnails
-function switchModalImage(newSrc, thumbBtn) {
+// Switch modal hero preview image when thumbnail clicked
+function switchModalHero(imgSrc, btnEl) {
   const heroImg = document.getElementById('modal-hero-img');
   if (heroImg) {
-    heroImg.style.opacity = '0.3';
-    setTimeout(() => {
-      heroImg.src = newSrc;
-      heroImg.style.opacity = '1';
-    }, 150);
+    heroImg.src = imgSrc;
   }
-
-  // Update active thumbnail styling
-  document.querySelectorAll('.modal-gallery-thumb').forEach(btn => {
-    btn.classList.remove('border-ghana-green', 'ring-2', 'ring-emerald-400/50', 'scale-105');
-    btn.classList.add('border-transparent', 'opacity-75');
+  document.querySelectorAll('.modal-gallery-thumb').forEach(b => {
+    b.classList.remove('border-ghana-green', 'ring-2', 'ring-emerald-400/50', 'scale-105');
+    b.classList.add('border-transparent', 'opacity-75');
   });
-
-  if (thumbBtn) {
-    thumbBtn.classList.remove('border-transparent', 'opacity-75');
-    thumbBtn.classList.add('border-ghana-green', 'ring-2', 'ring-emerald-400/50', 'scale-105');
+  if (btnEl) {
+    btnEl.classList.remove('border-transparent', 'opacity-75');
+    btnEl.classList.add('border-ghana-green', 'ring-2', 'ring-emerald-400/50', 'scale-105');
   }
 }
 
@@ -505,14 +881,35 @@ function closeModal() {
   const modal = document.getElementById('detail-modal');
   modal.classList.add('opacity-0');
   setTimeout(() => modal.classList.add('hidden'), 200);
+
+  // Clear site breadcrumb
+  const bcSepAttraction = document.getElementById('bc-sep-attraction');
+  const bcAttraction = document.getElementById('bc-attraction');
+  if (bcSepAttraction && bcAttraction) {
+    bcSepAttraction.classList.add('hidden');
+    bcAttraction.classList.add('hidden');
+  }
+
+  // Restore hash to region if we were viewing a site
+  if (window.location.hash.startsWith('#/central/')) {
+    window.location.hash = '#/central';
+  }
 }
 
-// Event Listeners Configuration
+// ---------------------------------------------------------------------------
+// 6. Event Listeners Configuration
+// ---------------------------------------------------------------------------
+
 function setupEventListeners() {
   // Modal Close
   document.getElementById('btn-close-modal').addEventListener('click', closeModal);
   document.getElementById('detail-modal').addEventListener('click', (e) => {
     if (e.target.id === 'detail-modal') closeModal();
+  });
+
+  // Back to All Regions button
+  document.getElementById('btn-back-national').addEventListener('click', () => {
+    window.location.hash = '#/';
   });
 
   // Category Filter Chips
@@ -563,20 +960,26 @@ function setupEventListeners() {
   document.getElementById('btn-toggle-boundary').addEventListener('click', () => {
     state.showBoundary = !state.showBoundary;
     const visibility = state.showBoundary ? 'visible' : 'none';
-    if (map.getLayer('central-region-fill')) {
-      map.setLayoutProperty('central-region-fill', 'visibility', visibility);
-      map.setLayoutProperty('central-region-outline', 'visibility', visibility);
+    if (map.getLayer('regions-fill')) {
+      map.setLayoutProperty('regions-fill', 'visibility', visibility);
+      map.setLayoutProperty('regions-outline', 'visibility', visibility);
     }
   });
 
   // Basemap style switcher
   document.getElementById('btn-style-streets').addEventListener('click', () => {
     map.setStyle(BASEMAP_STYLES.streets);
-    setTimeout(loadRegionBoundary, 300);
+    setTimeout(() => {
+      loadRegionsData();
+      loadDistrictsData();
+    }, 300);
   });
   document.getElementById('btn-style-satellite').addEventListener('click', () => {
     map.setStyle(BASEMAP_STYLES.satellite);
-    setTimeout(loadRegionBoundary, 300);
+    setTimeout(() => {
+      loadRegionsData();
+      loadDistrictsData();
+    }, 300);
   });
 
   // Mobile Drawer Toggle
@@ -634,6 +1037,11 @@ function triggerNearMe() {
         .setLngLat([lon, lat])
         .addTo(map);
 
+      // Ensure we switch to regional tier to view results
+      if (state.currentTier !== 'regional') {
+        window.location.hash = '#/central';
+      }
+
       // Call Spatial Proximity API
       try {
         const res = await fetch(`/api/attractions/nearby?lat=${lat}&lon=${lon}&radius_km=100&limit=20`);
@@ -666,6 +1074,9 @@ function triggerNearMe() {
 // Fallback proximity simulation centered at Cape Coast
 async function simulateNearMe(lat, lon) {
   try {
+    if (state.currentTier !== 'regional') {
+      window.location.hash = '#/central';
+    }
     const res = await fetch(`/api/attractions/nearby?lat=${lat}&lon=${lon}&radius_km=50&limit=20`);
     const nearbyItems = await res.json();
     document.getElementById('nearby-banner').classList.remove('hidden');
@@ -675,4 +1086,22 @@ async function simulateNearMe(lat, lon) {
   } catch (err) {
     console.error(err);
   }
+}
+
+// Toast notification helper
+function showToast(msg) {
+  const existing = document.getElementById('app-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'app-toast';
+  toast.className = 'fixed bottom-8 right-8 z-50 bg-gray-900/95 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-gray-700 text-xs flex items-center space-x-2 animate-bounce';
+  toast.innerHTML = `<span>${msg}</span>`;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.transition = 'opacity 0.3s ease';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
 }

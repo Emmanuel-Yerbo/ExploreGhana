@@ -59,8 +59,24 @@ async def list_categories():
 
 @app.get("/api/regions", tags=["Geospatial Boundaries"])
 async def get_regions_geojson():
-    """Returns the administrative boundary GeoJSON FeatureCollection for Central Region."""
+    """Returns the administrative boundary GeoJSON FeatureCollection for all 16 regions of Ghana."""
     return repo.regions_geojson
+
+@app.get("/api/regions/{region_id}", tags=["Geospatial Boundaries"])
+async def get_region_details(region_id: str):
+    """Retrieve detailed boundary and metadata for a single administrative region by slug ID."""
+    region = repo.get_region_by_id(region_id)
+    if not region:
+        raise HTTPException(status_code=404, detail=f"Region '{region_id}' not found")
+    return region
+
+@app.get("/api/regions/{region_id}/districts", tags=["Geospatial Boundaries"])
+async def get_region_districts(region_id: str):
+    """Retrieve district (ADM2) boundary GeoJSON FeatureCollection for a specified region."""
+    region = repo.get_region_by_id(region_id)
+    if not region:
+        raise HTTPException(status_code=404, detail=f"Region '{region_id}' not found")
+    return repo.get_districts_by_region(region_id)
 
 @app.get("/api/attractions", response_model=List[Attraction], tags=["Attractions"])
 async def get_attractions(

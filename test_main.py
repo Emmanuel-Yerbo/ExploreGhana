@@ -191,13 +191,35 @@ class TestBBox:
 # ---------------------------------------------------------------------------
 
 class TestRegions:
-    def test_regions_returns_feature_collection(self):
+    def test_regions_returns_feature_collection_with_16_regions(self):
         r = client.get("/api/regions")
         assert r.status_code == 200
         body = r.json()
         assert body["type"] == "FeatureCollection"
-        assert len(body["features"]) > 0
-        assert body["features"][0]["geometry"]["type"] == "Polygon"
+        assert len(body["features"]) == 16
+        assert all(f["geometry"]["type"] in ["Polygon", "MultiPolygon"] for f in body["features"])
+
+    def test_get_central_region_by_id(self):
+        r = client.get("/api/regions/central")
+        assert r.status_code == 200
+        feat = r.json()
+        assert feat["properties"]["region_id"] == "central"
+        assert feat["properties"]["capital"] == "Cape Coast"
+        assert feat["properties"]["attraction_count"] == 20
+
+    def test_unknown_region_returns_404(self):
+        r = client.get("/api/regions/atlantis")
+        assert r.status_code == 404
+
+    def test_get_central_districts(self):
+        r = client.get("/api/regions/central/districts")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["type"] == "FeatureCollection"
+        assert len(body["features"]) == 22
+        # Check Cape Coast Metropolitan exists
+        names = [f["properties"]["name"] for f in body["features"]]
+        assert any("Cape Coast" in n for n in names)
 
 
 # ---------------------------------------------------------------------------

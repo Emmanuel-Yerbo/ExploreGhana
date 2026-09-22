@@ -61,12 +61,19 @@
               Explore<span class="text-ghana-gold">Ghana</span>
             </h1>
             <span class="bg-ghana-green/90 text-emerald-100 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-400/30">
-              Pilot V0
+              V1.1
             </span>
           </div>
-          <p class="text-[11px] text-gray-300 hidden sm:block">
-            Ministry of Tourism, Arts & Culture — Central Region Geoportal
-          </p>
+          <!-- Interactive Breadcrumb Highway -->
+          <nav id="breadcrumb-bar" class="flex items-center space-x-1 text-[11px] text-gray-300 mt-0.5">
+            <a href="#/" id="bc-ghana" class="hover:text-ghana-gold transition-colors font-medium flex items-center space-x-1">
+              <span>🇬🇭 Ghana</span>
+            </a>
+            <span id="bc-sep-region" class="hidden text-gray-500">/</span>
+            <a href="#/central" id="bc-region" class="hidden hover:text-ghana-gold transition-colors font-semibold text-white">Central Region</a>
+            <span id="bc-sep-attraction" class="hidden text-gray-500">/</span>
+            <span id="bc-attraction" class="hidden text-ghana-gold font-bold truncate max-w-[140px] sm:max-w-[200px]"></span>
+          </nav>
         </div>
       </div>
 
@@ -79,7 +86,7 @@
 
         <button id="btn-toggle-boundary" class="bg-gray-800/80 hover:bg-gray-700 text-gray-200 text-xs font-medium px-3 py-2 rounded-lg flex items-center space-x-1.5 transition-all border border-gray-700">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span class="hidden md:inline">Region Boundary</span>
+          <span class="hidden md:inline">Boundaries</span>
         </button>
 
         <a href="/docs" target="_blank" class="bg-gray-800/80 hover:bg-gray-700 text-gray-200 text-xs font-medium px-3 py-2 rounded-lg flex items-center space-x-1 transition-all border border-gray-700">
@@ -100,63 +107,97 @@
       <!-- Left Discovery Sidebar -->
       <aside id="sidebar" class="w-full md:w-[420px] lg:w-[460px] bg-white h-full flex flex-col z-20 border-r border-gray-200 shadow-xl transition-all duration-300 absolute md:relative inset-y-0 left-0">
         
-        <!-- Search & Filter Controls Panel -->
-        <div class="p-4 bg-white border-b border-gray-200 flex-shrink-0 space-y-3">
-          
-          <!-- Search Input -->
-          <div class="relative">
-            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
-            <input 
-              type="text" 
-              id="search-input" 
-              placeholder="Search Cape Coast Castle, Kakum, beaches..." 
-              class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ghana-green focus:bg-white transition-all shadow-inner"
-            />
-            <button id="clear-search" class="hidden absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-              <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
+        <!-- Tier 1: National Regions Explorer Panel -->
+        <div id="national-panel" class="flex flex-col flex-1 overflow-hidden">
+          <div class="p-4 bg-white border-b border-gray-200 flex-shrink-0 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center space-x-1.5">
+                <i data-lucide="map" class="w-3.5 h-3.5 text-ghana-gold"></i>
+                <span>All 16 Tourism Regions</span>
+              </h2>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">1 Active Pilot</span>
+            </div>
+            <p class="text-xs text-gray-500 leading-relaxed">
+              Click a region polygon or card below to explore administrative bounds, districts, and curated attractions.
+            </p>
           </div>
-
-          <!-- Category Horizontal Scroll Pills -->
-          <div>
-            <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5 font-semibold">
-              <span>EXPLORE CATEGORIES</span>
-              <span id="results-count" class="text-ghana-green font-bold">20 Attractions</span>
-            </div>
-            <div id="category-chips" class="flex space-x-1.5 overflow-x-auto pb-1 scrollbar-thin">
-              <button data-category="all" class="category-chip active whitespace-nowrap text-xs font-semibold px-3 py-1.5 rounded-full border border-ghana-green bg-ghana-green text-white shadow-sm transition-all">
-                All (20)
-              </button>
-              <button data-category="Heritage & Castles" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
-                🏰 Castles & Forts
-              </button>
-              <button data-category="Nature & Wildlife" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
-                🌿 Rainforest & Eco
-              </button>
-              <button data-category="Beaches & Coastal" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
-                🏖️ Beaches & Coves
-              </button>
-              <button data-category="Culture & Shrines" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
-                🥁 Culture & Shrines
-              </button>
-            </div>
-          </div>
-
-          <!-- Proximity Banner (Active when GPS triggered) -->
-          <div id="nearby-banner" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between">
-            <div class="flex items-center space-x-2 text-xs text-emerald-800">
-              <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
-              <span>Sorting by closest to your location</span>
-            </div>
-            <button id="btn-reset-nearby" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline">
-              Clear
-            </button>
+          <div id="regions-list" class="flex-1 overflow-y-auto p-4 space-y-2.5 bg-gray-50/70">
+            <!-- Populated dynamically via app.js -->
           </div>
         </div>
 
-        <!-- Attraction Cards List Container -->
-        <div id="attractions-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/70">
-          <!-- Populated dynamically via app.js -->
+        <!-- Tier 2: Regional Discovery & Attractions Panel -->
+        <div id="regional-panel" class="hidden flex flex-col flex-1 overflow-hidden">
+          <!-- Back to National Navigation Header -->
+          <div class="px-4 py-2.5 bg-white flex items-center justify-between border-b border-gray-100">
+            <button id="btn-back-national" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold flex items-center space-x-1.5 transition-colors">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span>All 16 Regions</span>
+            </button>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+              <span>Central Region Active Pilot</span>
+            </span>
+          </div>
+
+          <!-- Search & Filter Controls Panel -->
+          <div class="p-4 bg-white border-b border-gray-200 flex-shrink-0 space-y-3">
+            
+            <!-- Search Input -->
+            <div class="relative">
+              <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+              <input 
+                type="text" 
+                id="search-input" 
+                placeholder="Search Cape Coast Castle, Kakum, beaches..." 
+                class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ghana-green focus:bg-white transition-all shadow-inner"
+              />
+              <button id="clear-search" class="hidden absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Category Horizontal Scroll Pills -->
+            <div>
+              <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5 font-semibold">
+                <span>EXPLORE CATEGORIES</span>
+                <span id="results-count" class="text-ghana-green font-bold">20 Attractions</span>
+              </div>
+              <div id="category-chips" class="flex space-x-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                <button data-category="all" class="category-chip active whitespace-nowrap text-xs font-semibold px-3 py-1.5 rounded-full border border-ghana-green bg-ghana-green text-white shadow-sm transition-all">
+                  All (20)
+                </button>
+                <button data-category="Heritage & Castles" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                  🏰 Castles & Forts
+                </button>
+                <button data-category="Nature & Wildlife" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                  🌿 Rainforest & Eco
+                </button>
+                <button data-category="Beaches & Coastal" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                  🏖️ Beaches & Coves
+                </button>
+                <button data-category="Culture & Shrines" class="category-chip whitespace-nowrap text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all">
+                  🥁 Culture & Shrines
+                </button>
+              </div>
+            </div>
+
+            <!-- Proximity Banner (Active when GPS triggered) -->
+            <div id="nearby-banner" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between">
+              <div class="flex items-center space-x-2 text-xs text-emerald-800">
+                <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                <span>Sorting by closest to your location</span>
+              </div>
+              <button id="btn-reset-nearby" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline">
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Attraction Cards List Container -->
+          <div id="attractions-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/70">
+            <!-- Populated dynamically via app.js -->
+          </div>
         </div>
 
         <!-- Footer / Credits -->

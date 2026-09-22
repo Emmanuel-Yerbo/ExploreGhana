@@ -7,7 +7,9 @@ from models import Attraction, EntryFee, RoadAccess, AttractionGeoJSONCollection
 
 DATA_DIR = Path(__file__).parent / "data"
 ATTRACTIONS_FILE = DATA_DIR / "central_region_attractions.json"
-REGIONS_FILE = DATA_DIR / "regions_geojson.json"
+REGIONS_FILE = DATA_DIR / "ghana_regions_adm1.json"
+FALLBACK_REGIONS_FILE = DATA_DIR / "regions_geojson.json"
+DISTRICTS_FILE = DATA_DIR / "central_districts_adm2.json"
 
 class SpatialRepository:
     """
@@ -18,6 +20,7 @@ class SpatialRepository:
     def __init__(self):
         self.attractions: List[Attraction] = []
         self.regions_geojson: Dict[str, Any] = {}
+        self.districts_geojson: Dict[str, Any] = {}
         self.reload_data()
 
     def reload_data(self):
@@ -29,12 +32,44 @@ class SpatialRepository:
         else:
             self.attractions = []
 
-        # Load region boundaries
-        if REGIONS_FILE.exists():
-            with open(REGIONS_FILE, "r", encoding="utf-8") as f:
+        # Load region boundaries (16 regions of Ghana)
+        reg_path = REGIONS_FILE if REGIONS_FILE.exists() else FALLBACK_REGIONS_FILE
+        if reg_path.exists():
+            with open(reg_path, "r", encoding="utf-8") as f:
                 self.regions_geojson = json.load(f)
         else:
             self.regions_geojson = {"type": "FeatureCollection", "features": []}
+
+        # Load district boundaries
+        if DISTRICTS_FILE.exists():
+            with open(DISTRICTS_FILE, "r", encoding="utf-8") as f:
+                self.districts_geojson = json.load(f)
+        else:
+            self.districts_geojson = {"type": "FeatureCollection", "features": []}
+
+    def get_region_by_id(self, region_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a specific region feature and metadata by slug ID."""
+        for feature in self.regions_geojson.get("features", []):
+            if feature.get("properties", {}).get("region_id") == region_id or feature.get("id") == region_id:
+                return feature
+        return None
+
+    def get_districts_by_region(self, region_id: str) -> Dict[str, Any]:
+        """Retrieve districts FeatureCollection for a specified region."""
+        matching = [
+            f for f in self.districts_geojson.get("features", [])
+            if f.get("properties", {}).get("region_id") == region_id
+        ]
+        return {
+            "type": "FeatureCollection",
+            "metadata": {
+                "source": "geoBoundaries (geoboundaries.org)",
+                "license": "CC BY 4.0",
+                "region_id": region_id,
+                "total_districts": len(matching)
+            },
+            "features": matching
+        }
 
     @staticmethod
     def haversine_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
