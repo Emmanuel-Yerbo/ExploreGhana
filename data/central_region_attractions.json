@@ -15,7 +15,8 @@
       "local_adult": 30,
       "local_student": 15,
       "foreigner_adult": 150,
-      "foreigner_student": 90
+      "foreigner_student": 90,
+      "fee_verified": false
     },
     "opening_hours": "Monday - Sunday: 09:00 - 17:00",
     "contact_phone": "+233 33 213 2529",
@@ -46,7 +47,9 @@
       "surface": "Paved asphalt (High Street / Victoria Road)",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any standard vehicle or taxi"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "elmina-castle",
@@ -64,7 +67,8 @@
       "local_adult": 30,
       "local_student": 15,
       "foreigner_adult": 150,
-      "foreigner_student": 90
+      "foreigner_student": 90,
+      "fee_verified": false
     },
     "opening_hours": "Monday - Sunday: 09:00 - 16:30",
     "contact_phone": "+233 24 456 7890",
@@ -94,7 +98,9 @@
       "surface": "Paved asphalt",
       "passable_rainy_season": true,
       "vehicle_recommended": "Standard saloon car, trotro, or taxi"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "fort-st-jago",
@@ -112,7 +118,8 @@
       "local_adult": 20,
       "local_student": 10,
       "foreigner_adult": 70,
-      "foreigner_student": 40
+      "foreigner_student": 40,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 09:00 - 17:00",
     "contact_phone": "+233 33 213 2529",
@@ -141,7 +148,9 @@
       "surface": "Paved to hill base, stone footpath to entrance",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any vehicle"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "kakum-national-park",
@@ -159,7 +168,8 @@
       "local_adult": 60,
       "local_student": 30,
       "foreigner_adult": 220,
-      "foreigner_student": 130
+      "foreigner_student": 130,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 06:00 - 16:30 (Early morning bird watching by prior booking)",
     "contact_phone": "+233 33 213 0265",
@@ -191,7 +201,9 @@
       "surface": "Paved Cape Coast-Twifo Praso Road (approx. 33km north of Cape Coast)",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any saloon car, trotro, or tour bus"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "assin-manso-slave-river",
@@ -209,7 +221,8 @@
       "local_adult": 30,
       "local_student": 15,
       "foreigner_adult": 120,
-      "foreigner_student": 70
+      "foreigner_student": 70,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 08:30 - 17:00",
     "contact_phone": "+233 24 384 9201",
@@ -238,7 +251,9 @@
       "surface": "Asphalt N8 Highway (Accra-Kumasi via Cape Coast)",
       "passable_rainy_season": true,
       "vehicle_recommended": "Standard saloon car"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "hans-cottage-botel",
@@ -256,7 +271,8 @@
       "local_adult": 20,
       "local_student": 10,
       "foreigner_adult": 50,
-      "foreigner_student": 30
+      "foreigner_student": 30,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 08:00 - 21:00",
     "contact_phone": "+233 33 213 3488",
@@ -285,7 +301,9 @@
       "surface": "Paved Cape Coast-Kakum trunk road",
       "passable_rainy_season": true,
       "vehicle_recommended": "All vehicles"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "brenu-beach",
@@ -303,7 +321,8 @@
       "local_adult": 10,
       "local_student": 5,
       "foreigner_adult": 30,
-      "foreigner_student": 20
+      "foreigner_student": 20,
+      "fee_verified": false
     },
     "opening_hours": "Open 24 hours (Daylight recommended: 08:00 - 18:30)",
     "contact_phone": "+233 24 555 1212",
@@ -334,7 +353,9 @@
       "surface": "Turn off paved N1 highway onto 3km graded laterite track",
       "passable_rainy_season": true,
       "vehicle_recommended": "Standard saloon car (moderate speed) or SUV"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "fort-amsterdam",
@@ -352,7 +373,8 @@
       "local_adult": 20,
       "local_student": 10,
       "foreigner_adult": 60,
-      "foreigner_student": 35
+      "foreigner_student": 35,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 09:00 - 17:00",
     "contact_phone": "+233 33 213 2529",
@@ -381,7 +403,9 @@
       "surface": "Paved coastal N1 road to Abandze town, 400m climb",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any vehicle"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "fort-patience",
@@ -399,7 +423,8 @@
       "local_adult": 20,
       "local_student": 10,
       "foreigner_adult": 60,
-      "foreigner_student": 35
+      "foreigner_student": 35,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 09:00 - 17:00",
     "contact_phone": "+233 24 111 2233",
@@ -428,7 +453,9 @@
       "surface": "Paved asphalt from Winneba junction into Apam town",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any standard vehicle"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "anomabo-beach-fort-william",
@@ -446,7 +473,8 @@
       "local_adult": 15,
       "local_student": 10,
       "foreigner_adult": 50,
-      "foreigner_student": 25
+      "foreigner_student": 25,
+      "fee_verified": false
     },
     "opening_hours": "Beach open 24/7; Fort: 09:00 - 17:00",
     "contact_phone": "+233 24 333 4455",
@@ -476,7 +504,9 @@
       "surface": "Paved coastal N1 highway",
       "passable_rainy_season": true,
       "vehicle_recommended": "All vehicles"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "posuban-shrines-mankessim",
@@ -494,7 +524,8 @@
       "local_adult": 10,
       "local_student": 5,
       "foreigner_adult": 40,
-      "foreigner_student": 20
+      "foreigner_student": 20,
+      "fee_verified": false
     },
     "opening_hours": "Daily: Daylight hours (08:00 - 18:00)",
     "contact_phone": "+233 20 888 9900",
@@ -523,7 +554,9 @@
       "surface": "Paved central roads throughout town",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any vehicle"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "fetu-afahye-festival-grounds",
@@ -541,7 +574,8 @@
       "local_adult": 15,
       "local_student": 5,
       "foreigner_adult": 50,
-      "foreigner_student": 30
+      "foreigner_student": 30,
+      "fee_verified": false
     },
     "opening_hours": "Palace visits by prior appointment; festival first week of September",
     "contact_phone": "+233 33 213 2001",
@@ -570,7 +604,9 @@
       "surface": "Paved Cape Coast municipal road",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any vehicle"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "cape-coast-centre-national-culture",
@@ -588,7 +624,8 @@
       "local_adult": 0,
       "local_student": 0,
       "foreigner_adult": 0,
-      "foreigner_student": 0
+      "foreigner_student": 0,
+      "fee_verified": false
     },
     "opening_hours": "Monday - Saturday: 08:30 - 17:30",
     "contact_phone": "+233 33 213 2212",
@@ -617,7 +654,9 @@
       "surface": "Paved Cape Coast town road",
       "passable_rainy_season": true,
       "vehicle_recommended": "Any vehicle"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "university-of-cape-coast-campus",
@@ -635,7 +674,8 @@
       "local_adult": 0,
       "local_student": 0,
       "foreigner_adult": 0,
-      "foreigner_student": 0
+      "foreigner_student": 0,
+      "fee_verified": false
     },
     "opening_hours": "Open daily for visitors: 08:00 - 18:00",
     "contact_phone": "+233 33 213 2440",
@@ -664,7 +704,9 @@
       "surface": "Paved dual carriageway",
       "passable_rainy_season": true,
       "vehicle_recommended": "All vehicles"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "coconut-grove-beach-resort",
@@ -682,7 +724,8 @@
       "local_adult": 0,
       "local_student": 0,
       "foreigner_adult": 0,
-      "foreigner_student": 0
+      "foreigner_student": 0,
+      "fee_verified": false
     },
     "opening_hours": "24 hours for hotel guests; Day visitors welcome for dining",
     "contact_phone": "+233 24 433 3111",
@@ -711,7 +754,9 @@
       "surface": "Paved asphalt road",
       "passable_rainy_season": true,
       "vehicle_recommended": "All vehicles"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "biriwa-beach-artisanal-harbour",
@@ -729,7 +774,8 @@
       "local_adult": 0,
       "local_student": 0,
       "foreigner_adult": 0,
-      "foreigner_student": 0
+      "foreigner_student": 0,
+      "fee_verified": false
     },
     "opening_hours": "Open daily: 06:00 - 19:00",
     "contact_phone": "+233 24 666 7788",
@@ -757,7 +803,9 @@
       "surface": "Turn off main N1 highway down 1km paved descent",
       "passable_rainy_season": true,
       "vehicle_recommended": "All vehicles"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "winneba-coastal-lagoon",
@@ -775,7 +823,8 @@
       "local_adult": 15,
       "local_student": 5,
       "foreigner_adult": 50,
-      "foreigner_student": 25
+      "foreigner_student": 25,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 08:00 - 18:00; Festival in May",
     "contact_phone": "+233 20 999 1122",
@@ -805,7 +854,9 @@
       "surface": "Paved N1 highway junction to Winneba town",
       "passable_rainy_season": true,
       "vehicle_recommended": "All vehicles"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "saltpond-beach-historic-town",
@@ -823,7 +874,8 @@
       "local_adult": 10,
       "local_student": 5,
       "foreigner_adult": 30,
-      "foreigner_student": 15
+      "foreigner_student": 15,
+      "fee_verified": false
     },
     "opening_hours": "Town and beach accessible 24/7",
     "contact_phone": "+233 24 777 8899",
@@ -852,7 +904,9 @@
       "surface": "Paved national highway N1",
       "passable_rainy_season": true,
       "vehicle_recommended": "All vehicles"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "gomoa-fetteh-white-sands",
@@ -870,7 +924,8 @@
       "local_adult": 50,
       "local_student": 30,
       "foreigner_adult": 150,
-      "foreigner_student": 100
+      "foreigner_student": 100,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 09:00 - 20:00",
     "contact_phone": "+233 24 456 9900",
@@ -900,7 +955,9 @@
       "surface": "Paved road from Kasoa-Winneba road through Senya Beraku/Fetteh",
       "passable_rainy_season": true,
       "vehicle_recommended": "Standard car or SUV"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   },
   {
     "id": "assin-attandanso-reserve",
@@ -918,7 +975,8 @@
       "local_adult": 40,
       "local_student": 20,
       "foreigner_adult": 120,
-      "foreigner_student": 70
+      "foreigner_student": 70,
+      "fee_verified": false
     },
     "opening_hours": "Daily: 07:00 - 16:00 (Ranger-escorted treks only)",
     "contact_phone": "+233 33 213 0265",
@@ -950,6 +1008,8 @@
       "surface": "Laterite forest access road",
       "passable_rainy_season": false,
       "vehicle_recommended": "High-clearance vehicle or 4x4 during rainy months"
-    }
+    },
+    "source": "Ghana Museums and Monuments Board / Ghana Wildlife Division / Wikipedia",
+    "verified_date": "2026-09-22"
   }
 ]

@@ -6,31 +6,43 @@ from typing import List, Optional, Tuple, Dict, Any
 from models import Attraction, EntryFee, RoadAccess, AttractionGeoJSONCollection, AttractionGeoJSONFeature
 
 DATA_DIR = Path(__file__).parent / "data"
-ATTRACTIONS_FILE = DATA_DIR / "central_region_attractions.json"
+CENTRAL_ATTRACTIONS_FILE = DATA_DIR / "central_region_attractions.json"
+ASHANTI_ATTRACTIONS_FILE = DATA_DIR / "ashanti_region_attractions.json"
 REGIONS_FILE = DATA_DIR / "ghana_regions_adm1.json"
 FALLBACK_REGIONS_FILE = DATA_DIR / "regions_geojson.json"
-DISTRICTS_FILE = DATA_DIR / "central_districts_adm2.json"
+CENTRAL_DISTRICTS_FILE = DATA_DIR / "central_districts_adm2.json"
+ASHANTI_DISTRICTS_FILE = DATA_DIR / "ashanti_districts_adm2.json"
 
 class SpatialRepository:
     """
     Spatial Data Repository for ExploreGhana.
     Provides in-memory geodesic spatial queries (Haversine distance, bbox clipping)
-    and loads verified geospatial seed data.
+    and loads verified geospatial seed data across Ghanaian administrative regions.
     """
     def __init__(self):
         self.attractions: List[Attraction] = []
         self.regions_geojson: Dict[str, Any] = {}
-        self.districts_geojson: Dict[str, Any] = {}
+        self.districts_by_region: Dict[str, Dict[str, Any]] = {}
         self.reload_data()
 
     def reload_data(self):
-        # Load attractions
-        if ATTRACTIONS_FILE.exists():
-            with open(ATTRACTIONS_FILE, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-                self.attractions = [Attraction(**item) for item in raw_data]
-        else:
-            self.attractions = []
+        # Load attractions across active regions
+        loaded = []
+        if CENTRAL_ATTRACTIONS_FILE.exists():
+            with open(CENTRAL_ATTRACTIONS_FILE, "r", encoding="utf-8") as f:
+                c_data = json.load(f)
+                for item in c_data:
+                    if "region_id" not in item:
+                        item["region_id"] = "central"
+                loaded.extend(c_data)
+        if ASHANTI_ATTRACTIONS_FILE.exists():
+            with open(ASHANTI_ATTRACTIONS_FILE, "r", encoding="utf-8") as f:
+                a_data = json.load(f)
+                for item in a_data:
+                    if "region_id" not in item:
+                        item["region_id"] = "ashanti"
+                loaded.extend(a_data)
+        self.attractions = [Attraction(**item) for item in loaded]
 
         # Load region boundaries (16 regions of Ghana)
         reg_path = REGIONS_FILE if REGIONS_FILE.exists() else FALLBACK_REGIONS_FILE
@@ -40,12 +52,14 @@ class SpatialRepository:
         else:
             self.regions_geojson = {"type": "FeatureCollection", "features": []}
 
-        # Load district boundaries
-        if DISTRICTS_FILE.exists():
-            with open(DISTRICTS_FILE, "r", encoding="utf-8") as f:
-                self.districts_geojson = json.load(f)
-        else:
-            self.districts_geojson = {"type": "FeatureCollection", "features": []}
+        # Load district boundaries per region
+        self.districts_by_region = {}
+        if CENTRAL_DISTRICTS_FILE.exists():
+            with open(CENTRAL_DISTRICTS_FILE, "r", encoding="utf-8") as f:
+                self.districts_by_region["central"] = json.load(f)
+        if ASHANTI_DISTRICTS_FILE.exists():
+            with open(ASHANTI_DISTRICTS_FILE, "r", encoding="utf-8") as f:
+                self.districts_by_region["ashanti"] = json.load(f)
 
     def get_region_by_id(self, region_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve a specific region feature and metadata by slug ID."""
@@ -56,19 +70,18 @@ class SpatialRepository:
 
     def get_districts_by_region(self, region_id: str) -> Dict[str, Any]:
         """Retrieve districts FeatureCollection for a specified region."""
-        matching = [
-            f for f in self.districts_geojson.get("features", [])
-            if f.get("properties", {}).get("region_id") == region_id
-        ]
+        rid = region_id.lower()
+        if rid in self.districts_by_region:
+            return self.districts_by_region[rid]
         return {
             "type": "FeatureCollection",
             "metadata": {
                 "source": "geoBoundaries (geoboundaries.org)",
                 "license": "CC BY 4.0",
                 "region_id": region_id,
-                "total_districts": len(matching)
+                "total_districts": 0
             },
-            "features": matching
+            "features": []
         }
 
     @staticmethod
@@ -93,15 +106,24 @@ class SpatialRepository:
 
     def get_all(
         self,
+        region_id: Optional[str] = None,
         category: Optional[str] = None,
         district: Optional[str] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
     ) -> List[Attraction]:
         """
-        Retrieve attractions with optional categorical, district, and textual filters.
+        Retrieve attractions with optional regional, categorical, district, and textual filters.
         """
         results = self.attractions
+
+        if region_id and region_id.lower() != "all":
+            rid = region_id.lower()
+            results = [
+                a for a in results
+                if (a.region_id and a.region_id.lower() == rid)
+                or rid in a.region.lower()
+            ]
 
         if category and category.lower() != "all":
             results = [a for a in results if a.category.lower() == category.lower()]
@@ -199,6 +221,7 @@ class SpatialRepository:
                     "local_name": a.local_name,
                     "category": a.category,
                     "region": a.region,
+                    "region_id": "central" if "central" in a.region.lower() else "ashanti",
                     "district": a.district,
                     "description": a.description,
                     "entry_fee_ghs": a.entry_fee_ghs.model_dump(),
@@ -214,6 +237,9 @@ class SpatialRepository:
                     "passable_rainy": a.road_access.passable_rainy_season,
                     "vehicle": a.road_access.vehicle_recommended,
                     "distance_km": a.distance_km,
+                    "source": a.source,
+                    "verified_date": a.verified_date,
+                    "fee_verified": a.entry_fee_ghs.fee_verified,
                 },
             )
             features.append(feature)

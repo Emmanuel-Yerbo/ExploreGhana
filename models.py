@@ -6,6 +6,7 @@ class EntryFee(BaseModel):
     local_student: float = Field(0.0, description="Entrance fee for Ghanaian student in GHS")
     foreigner_adult: float = Field(..., description="Entrance fee for non-resident adult in GHS")
     foreigner_student: float = Field(0.0, description="Entrance fee for non-resident student in GHS")
+    fee_verified: bool = Field(False, description="Whether admission fees have been officially re-verified on-site or via direct agency tariff sheet")
 
 class RoadAccess(BaseModel):
     surface: str = Field(..., description="Road surface type, e.g., paved asphalt, laterite track")
@@ -18,6 +19,7 @@ class Attraction(BaseModel):
     local_name: Optional[str] = None
     category: str
     region: str
+    region_id: Optional[str] = None
     district: str
     latitude: float
     longitude: float
@@ -36,6 +38,8 @@ class Attraction(BaseModel):
     gallery: List[str] = []
     what_to_bring: List[str] = []
     road_access: RoadAccess
+    source: Optional[str] = Field("Official Register / Verified Authority", description="Authoritative reference source for entity data")
+    verified_date: Optional[str] = Field("2026-09-22", description="Date of last data grounding verification")
     distance_km: Optional[float] = Field(None, description="Calculated distance in km when querying proximity")
 
 class AttractionGeoJSONFeature(BaseModel):

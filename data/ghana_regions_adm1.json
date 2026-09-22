@@ -2921,13 +2921,14 @@
           -1.6244,
           6.6885
         ],
-        "tourism_status": "planned_v1_2",
-        "attraction_count": 0,
+        "tourism_status": "active_region",
+        "attraction_count": 25,
         "tagline": "The Golden Kingdom of Asante Craftsmanship and Royal Heritage",
         "highlights": [
-          "Manhyia Palace",
+          "Manhyia Palace Museum",
           "Lake Bosomtwe",
-          "Bonwire Kente Weaving"
+          "Bonwire Kente Weaving",
+          "UNESCO Asante Shrines"
         ],
         "bbox": [
           -2.44848,

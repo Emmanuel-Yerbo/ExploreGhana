@@ -27,10 +27,10 @@ REGION_METADATA = {
         "short_name": "Ashanti",
         "capital": "Kumasi",
         "capital_coords": [-1.6244, 6.6885],
-        "tourism_status": "planned_v1_2",
-        "attraction_count": 0,
+        "tourism_status": "active_region",
+        "attraction_count": 25,
         "tagline": "The Golden Kingdom of Asante Craftsmanship and Royal Heritage",
-        "highlights": ["Manhyia Palace", "Lake Bosomtwe", "Bonwire Kente Weaving"]
+        "highlights": ["Manhyia Palace Museum", "Lake Bosomtwe", "Bonwire Kente Weaving", "UNESCO Asante Shrines"]
     },
     "Greater Accra Region": {
         "id": "greater-accra",
@@ -190,6 +190,7 @@ def main():
     # Process ADM1
     enriched_regions = []
     central_polygon = None
+    ashanti_polygon = None
 
     for feat in adm1_raw['features']:
         raw_name = feat['properties']['shapeName']
@@ -209,6 +210,8 @@ def main():
 
         if meta["id"] == "central":
             central_polygon = geom
+        elif meta["id"] == "ashanti":
+            ashanti_polygon = geom
 
         properties = {
             "region_id": meta["id"],
@@ -330,6 +333,49 @@ def main():
     with open("data/central_districts_adm2.json", "w", encoding="utf-8") as f:
         json.dump(adm2_fc, f, indent=2)
     print(f"   Saved data/central_districts_adm2.json ({len(central_districts)} districts in Central Region).")
+
+    # Process Ashanti Districts
+    ashanti_districts = []
+    for feat in adm2_raw['features']:
+        geom = shape(feat['geometry'])
+        centroid = geom.centroid
+        if ashanti_polygon.contains(centroid) or ashanti_polygon.intersects(geom):
+            inter = ashanti_polygon.intersection(geom)
+            if inter.area / geom.area > 0.4:
+                d_name = feat['properties']['shapeName']
+                d_slug = slugify(d_name)
+                bounds = geom.bounds
+
+                ashanti_districts.append({
+                    "type": "Feature",
+                    "id": d_slug,
+                    "properties": {
+                        "district_id": d_slug,
+                        "name": d_name,
+                        "region_id": "ashanti",
+                        "region_name": "Ashanti Region",
+                        "attraction_count": 0, # enriched when attractions are matched
+                        "bbox": [round(b, 5) for b in bounds]
+                    },
+                    "geometry": mapping(geom)
+                })
+
+    ashanti_districts.sort(key=lambda d: d["properties"]["name"])
+
+    ashanti_adm2_fc = {
+        "type": "FeatureCollection",
+        "metadata": {
+            "source": "geoBoundaries (geoboundaries.org)",
+            "license": "CC BY 4.0",
+            "region": "Ashanti Region",
+            "total_districts": len(ashanti_districts)
+        },
+        "features": ashanti_districts
+    }
+
+    with open("data/ashanti_districts_adm2.json", "w", encoding="utf-8") as f:
+        json.dump(ashanti_adm2_fc, f, indent=2)
+    print(f"   Saved data/ashanti_districts_adm2.json ({len(ashanti_districts)} districts in Ashanti Region).")
 
 if __name__ == "__main__":
     main()

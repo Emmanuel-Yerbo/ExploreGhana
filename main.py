@@ -46,9 +46,9 @@ async def health_check():
     return SystemHealth(
         status="healthy",
         service="ExploreGhana Tourism Geoportal",
-        version="0.1.2-V0",
+        version="0.2.0-V1.2",
         total_attractions=len(repo.attractions),
-        regions_covered=["Central Region (Pilot)"],
+        regions_covered=["Central Region", "Ashanti Region"],
         spatial_engine="In-Memory Haversine Engine (PostGIS migration planned for V1)",
     )
 
@@ -80,17 +80,19 @@ async def get_region_districts(region_id: str):
 
 @app.get("/api/attractions", response_model=List[Attraction], tags=["Attractions"])
 async def get_attractions(
+    region: Optional[str] = Query(None, description="Filter by region (e.g. 'central', 'ashanti')"),
     category: Optional[str] = Query(None, description="Filter by category (e.g. 'Heritage & Castles', 'Nature & Wildlife', 'Beaches & Coastal')"),
     district: Optional[str] = Query(None, description="Filter by district name"),
     search: Optional[str] = Query(None, description="Case-insensitive text search across names, descriptions, and tags"),
 ):
     """
-    Retrieve tourist attractions with optional category, district, and search query filters.
+    Retrieve tourist attractions with optional region, category, district, and search query filters.
     """
-    return repo.get_all(category=category, district=district, search=search)
+    return repo.get_all(region_id=region, category=category, district=district, search=search)
 
 @app.get("/api/attractions/geojson", response_model=AttractionGeoJSONCollection, tags=["Geospatial Layers"])
 async def get_attractions_geojson(
+    region: Optional[str] = Query(None, description="Filter by region"),
     category: Optional[str] = Query(None, description="Filter by category"),
     search: Optional[str] = Query(None, description="Keyword search"),
 ):
@@ -98,7 +100,7 @@ async def get_attractions_geojson(
     Returns attractions formatted directly as a standard GeoJSON FeatureCollection.
     Ideal for direct consumption by MapLibre GL, Leaflet, or OpenLayers.
     """
-    filtered = repo.get_all(category=category, search=search)
+    filtered = repo.get_all(region_id=region, category=category, search=search)
     return repo.to_geojson(filtered)
 
 @app.get("/api/attractions/nearby", response_model=List[Attraction], tags=["Spatial Proximity"])

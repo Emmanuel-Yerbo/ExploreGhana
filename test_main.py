@@ -1,9 +1,8 @@
 """
-ExploreGhana V0 API Test Suite
+ExploreGhana V1.2 API Test Suite — Multi-Region Spatial Geoportal & Grounded Fact Standard
 Run with: python -m pytest test_main.py -v
 """
 import math
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -13,7 +12,10 @@ from database import SpatialRepository, repo
 client = TestClient(app)
 
 CAPE_COAST = {"lat": 5.1053, "lon": -1.2417}
-TOTAL_ATTRACTIONS = 20
+KUMASI = {"lat": 6.6885, "lon": -1.6244}
+TOTAL_ATTRACTIONS = 45
+CENTRAL_ATTRACTIONS = 20
+ASHANTI_ATTRACTIONS = 25
 
 
 # ---------------------------------------------------------------------------
@@ -28,7 +30,8 @@ class TestSystem:
         assert body["status"] == "healthy"
         assert body["service"] == "ExploreGhana Tourism Geoportal"
         assert body["total_attractions"] == TOTAL_ATTRACTIONS
-        assert "Central Region" in body["regions_covered"][0]
+        assert "Central Region" in body["regions_covered"]
+        assert "Ashanti Region" in body["regions_covered"]
 
     def test_root_serves_frontend(self):
         r = client.get("/")
@@ -46,8 +49,22 @@ class TestAttractions:
         assert r.status_code == 200
         assert len(r.json()) == TOTAL_ATTRACTIONS
 
+    def test_returns_central_attractions_by_region_query(self):
+        r = client.get("/api/attractions", params={"region": "central"})
+        assert r.status_code == 200
+        items = r.json()
+        assert len(items) == CENTRAL_ATTRACTIONS
+        assert all("central" in a["region"].lower() for a in items)
+
+    def test_returns_ashanti_attractions_by_region_query(self):
+        r = client.get("/api/attractions", params={"region": "ashanti"})
+        assert r.status_code == 200
+        items = r.json()
+        assert len(items) == ASHANTI_ATTRACTIONS
+        assert all("ashanti" in a["region"].lower() for a in items)
+
     def test_category_filter(self):
-        sample_category = repo.attractions[0].category
+        sample_category = "Heritage & Castles"
         r = client.get("/api/attractions", params={"category": sample_category})
         assert r.status_code == 200
         items = r.json()
@@ -61,24 +78,45 @@ class TestAttractions:
         assert len(items) > 0
         assert all("cape coast" in a["district"].lower() for a in items)
 
+    def test_ashanti_district_filter(self):
+        r = client.get("/api/attractions", params={"district": "Kumasi"})
+        assert r.status_code == 200
+        items = r.json()
+        assert len(items) > 0
+        assert all("kumasi" in a["district"].lower() for a in items)
+
     def test_search_matches_known_attraction(self):
-        r = client.get("/api/attractions", params={"search": "kakum"})
+        r = client.get("/api/attractions", params={"search": "manhyia"})
         assert r.status_code == 200
         names = " ".join(a["name"].lower() for a in r.json())
-        assert "kakum" in names
+        assert "manhyia" in names
 
     def test_search_no_results_returns_empty_list(self):
         r = client.get("/api/attractions", params={"search": "zzzznotaplace"})
         assert r.status_code == 200
         assert r.json() == []
 
-    def test_get_attraction_by_id(self):
+    def test_get_central_attraction_by_id(self):
         r = client.get("/api/attractions/cape-coast-castle")
         assert r.status_code == 200
         body = r.json()
         assert body["name"] == "Cape Coast Castle"
         assert body["entry_fee_ghs"]["foreigner_adult"] == 150
         assert body["entry_fee_ghs"]["local_adult"] == 30
+        assert "Ghana Museums and Monuments Board" in body["source"]
+        assert body["verified_date"] == "2026-09-22"
+        assert body["entry_fee_ghs"]["fee_verified"] is False
+
+    def test_get_ashanti_attraction_by_id(self):
+        r = client.get("/api/attractions/manhyia-palace-museum")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["name"] == "Manhyia Palace Museum"
+        assert body["local_name"] == "Manhyia Ahemfie"
+        assert body["entry_fee_ghs"]["foreigner_adult"] == 150
+        assert "Ghana Tourism Authority" in body["source"]
+        assert body["verified_date"] == "2026-09-22"
+        assert body["entry_fee_ghs"]["fee_verified"] is False
         assert body["road_access"]["surface"].startswith("Paved")
 
     def test_get_attraction_unknown_id_returns_404(self):
@@ -94,6 +132,14 @@ class TestAttractions:
         assert sum(c["count"] for c in items) == TOTAL_ATTRACTIONS
         assert all("name" in c and "count" in c for c in items)
 
+    def test_every_attraction_has_grounded_source_and_date(self):
+        for a in repo.attractions:
+            assert a.source and len(a.source.strip()) > 3, f"{a.id} missing verified source"
+            assert a.verified_date == "2026-09-22", f"{a.id} missing verified_date"
+            assert isinstance(a.entry_fee_ghs.fee_verified, bool)
+            if a.entry_fee_ghs.foreigner_adult > 0:
+                assert a.entry_fee_ghs.fee_verified is False, f"{a.id} paid fee must be unverified estimate"
+
 
 # ---------------------------------------------------------------------------
 # GeoJSON
@@ -107,6 +153,13 @@ class TestGeoJSON:
         assert body["type"] == "FeatureCollection"
         assert len(body["features"]) == TOTAL_ATTRACTIONS
 
+    def test_geojson_respects_region_filter(self):
+        r_ashanti = client.get("/api/attractions/geojson", params={"region": "ashanti"})
+        assert r_ashanti.status_code == 200
+        features = r_ashanti.json()["features"]
+        assert len(features) == ASHANTI_ATTRACTIONS
+        assert all(f["properties"]["region_id"] == "ashanti" for f in features)
+
     def test_geojson_feature_geometry_is_valid_point(self):
         r = client.get("/api/attractions/geojson")
         feature = r.json()["features"][0]
@@ -116,9 +169,12 @@ class TestGeoJSON:
         assert -180.0 <= lon <= 180.0
         assert -90.0 <= lat <= 90.0
         assert feature["properties"]["name"]
+        assert feature["properties"]["source"]
+        assert feature["properties"]["verified_date"]
+        assert feature["properties"]["fee_verified"] is False
 
     def test_geojson_respects_category_filter(self):
-        sample_category = repo.attractions[0].category
+        sample_category = "Nature & Wildlife"
         r = client.get("/api/attractions/geojson", params={"category": sample_category})
         features = r.json()["features"]
         assert len(features) > 0
@@ -130,7 +186,7 @@ class TestGeoJSON:
 # ---------------------------------------------------------------------------
 
 class TestNearby:
-    def test_nearby_returns_sorted_results_with_distance(self):
+    def test_nearby_cape_coast_returns_sorted_results(self):
         r = client.get(
             "/api/attractions/nearby",
             params={"lat": CAPE_COAST["lat"], "lon": CAPE_COAST["lon"], "radius_km": 50},
@@ -142,13 +198,16 @@ class TestNearby:
         assert distances == sorted(distances), "results must be sorted nearest-first"
         assert all(a["distance_km"] <= 50 for a in items)
 
-    def test_nearby_cape_coast_returns_castle_first(self):
+    def test_nearby_kumasi_returns_ashanti_sites_first(self):
         r = client.get(
             "/api/attractions/nearby",
-            params={"lat": CAPE_COAST["lat"], "lon": CAPE_COAST["lon"], "radius_km": 10},
+            params={"lat": KUMASI["lat"], "lon": KUMASI["lon"], "radius_km": 15},
         )
         assert r.status_code == 200
-        assert "Cape Coast Castle" in r.json()[0]["name"]
+        items = r.json()
+        assert len(items) > 0
+        assert any("Kumasi" in a["name"] or "Manhyia" in a["name"] or "Sword" in a["name"] for a in items)
+        assert all("ashanti" in a["region"].lower() for a in items)
 
     def test_nearby_zero_radius_returns_empty(self):
         r = client.get(
@@ -164,18 +223,18 @@ class TestNearby:
 
 
 class TestBBox:
-    def test_bbox_clips_to_central_region_viewport(self):
-        # Bounding box covering Cape Coast / Elmina coastal strip
+    def test_bbox_clips_to_ashanti_region_viewport(self):
+        # Bounding box around Kumasi metropolitan area
         r = client.get(
             "/api/attractions/bbox",
-            params={"min_lon": -1.5, "min_lat": 5.0, "max_lon": -1.1, "max_lat": 5.2},
+            params={"min_lon": -1.75, "min_lat": 6.60, "max_lon": -1.50, "max_lat": 6.80},
         )
         assert r.status_code == 200
         items = r.json()
         assert 0 < len(items) < TOTAL_ATTRACTIONS
         for a in items:
-            assert -1.5 <= a["longitude"] <= -1.1
-            assert 5.0 <= a["latitude"] <= 5.2
+            assert -1.75 <= a["longitude"] <= -1.50
+            assert 6.60 <= a["latitude"] <= 6.80
 
     def test_bbox_world_extent_returns_all(self):
         r = client.get(
@@ -207,6 +266,14 @@ class TestRegions:
         assert feat["properties"]["capital"] == "Cape Coast"
         assert feat["properties"]["attraction_count"] == 20
 
+    def test_get_ashanti_region_by_id(self):
+        r = client.get("/api/regions/ashanti")
+        assert r.status_code == 200
+        feat = r.json()
+        assert feat["properties"]["region_id"] == "ashanti"
+        assert feat["properties"]["capital"] == "Kumasi"
+        assert feat["properties"]["attraction_count"] == 25
+
     def test_unknown_region_returns_404(self):
         r = client.get("/api/regions/atlantis")
         assert r.status_code == 404
@@ -217,9 +284,18 @@ class TestRegions:
         body = r.json()
         assert body["type"] == "FeatureCollection"
         assert len(body["features"]) == 22
-        # Check Cape Coast Metropolitan exists
         names = [f["properties"]["name"] for f in body["features"]]
         assert any("Cape Coast" in n for n in names)
+
+    def test_get_ashanti_districts(self):
+        r = client.get("/api/regions/ashanti/districts")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["type"] == "FeatureCollection"
+        assert len(body["features"]) == 43
+        names = [f["properties"]["name"] for f in body["features"]]
+        assert any("Kumasi" in n for n in names)
+        assert any("Ejisu" in n for n in names)
 
 
 # ---------------------------------------------------------------------------
@@ -231,18 +307,18 @@ class TestHaversine:
         d = SpatialRepository.haversine_distance_km(5.1, -1.2, 5.1, -1.2)
         assert d == pytest.approx(0.0, abs=1e-9)
 
-    def test_known_distance_cape_coast_to_elmina(self):
-        # Cape Coast Castle to Elmina Castle: ~11.4 km great-circle
-        d = SpatialRepository.haversine_distance_km(5.1053, -1.2417, 5.0827, -1.3482)
-        assert d == pytest.approx(11.5, abs=1.0)
+    def test_known_distance_cape_coast_to_kumasi(self):
+        # Cape Coast to Kumasi: ~160-180 km great-circle
+        d = SpatialRepository.haversine_distance_km(5.1053, -1.2417, 6.6885, -1.6244)
+        assert d == pytest.approx(181.0, abs=10.0)
 
     def test_one_degree_latitude_is_about_111_km(self):
         d = SpatialRepository.haversine_distance_km(0.0, 0.0, 1.0, 0.0)
         assert d == pytest.approx(111.2, abs=1.0)
 
     def test_is_symmetric(self):
-        d1 = SpatialRepository.haversine_distance_km(5.1053, -1.2417, 5.52, -1.26)
-        d2 = SpatialRepository.haversine_distance_km(5.52, -1.26, 5.1053, -1.2417)
+        d1 = SpatialRepository.haversine_distance_km(5.1053, -1.2417, 6.6885, -1.6244)
+        d2 = SpatialRepository.haversine_distance_km(6.6885, -1.6244, 5.1053, -1.2417)
         assert d1 == pytest.approx(d2, abs=1e-9)
 
 
@@ -258,9 +334,12 @@ class TestRepository:
             assert -90.0 <= a.latitude <= 90.0
             assert a.entry_fee_ghs.foreigner_adult >= 0
             assert a.road_access.surface
+            assert a.source
+            assert a.verified_date
 
     def test_get_nearby_does_not_mutate_global_state(self):
         before = [a.distance_km for a in repo.attractions]
         repo.get_nearby(lat=5.1053, lon=-1.2417, radius_km=50)
         after = [a.distance_km for a in repo.attractions]
         assert before == after
+
