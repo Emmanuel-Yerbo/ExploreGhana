@@ -343,3 +343,95 @@ class TestRepository:
         after = [a.distance_km for a in repo.attractions]
         assert before == after
 
+
+# ---------------------------------------------------------------------------
+# Tier-4 Site Console & Micro-Spatial Pilot (Kakum National Park)
+# ---------------------------------------------------------------------------
+
+class TestMicroSpatial:
+    def test_kakum_micro_spatial_endpoint_returns_200(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["attraction_id"] == "kakum-national-park"
+        assert "Kakum National Park" in body["site_name"]
+        assert body["region_id"] == "central"
+        assert body["geojson"]["type"] == "FeatureCollection"
+        assert len(body["geojson"]["features"]) >= 10
+        assert "disputed_specifications" in body
+        assert "operational_parameters" in body
+        assert "physical_safety_protocols" in body
+        assert "pre_trip_checklist" in body
+        assert "official_contacts" in body
+
+    def test_kakum_micro_spatial_geojson_contains_core_features(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        features = r.json()["geojson"]["features"]
+        feature_ids = {f["properties"]["id"] for f in features}
+
+        # Core surveyed features from OpenStreetMap
+        assert "kakum-parking-lot" in feature_ids
+        assert "kakum-reception-office" in feature_ids
+        assert "kakum-ticket-office" in feature_ids
+        assert "kakum-rainforest-cafeteria" in feature_ids
+        assert "kakum-canopy-launch-platform" in feature_ids
+        assert "kakum-emergency-bailout" in feature_ids
+        assert "kakum-paved-concourse" in feature_ids
+
+        # Geometry validation
+        parking = next(f for f in features if f["properties"]["id"] == "kakum-parking-lot")
+        assert parking["geometry"]["type"] == "Polygon"
+        assert len(parking["geometry"]["coordinates"][0]) >= 4
+
+        launch = next(f for f in features if f["properties"]["id"] == "kakum-canopy-launch-platform")
+        assert launch["geometry"]["type"] == "Point"
+        assert launch["properties"]["elevation_m"] == 190
+
+    def test_kakum_micro_spatial_disputed_specs_citations(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        specs = r.json()["disputed_specifications"]
+        length_spec = next(s for s in specs if "Length" in s["parameter"])
+        assert length_spec is not None
+
+        sources = {s["source_name"]: s["stated_value"] for s in length_spec["sources"]}
+        assert "Ghana Wildlife Division (Official)" in sources
+        assert "Wikipedia (Lead Section)" in sources
+        assert "Wikipedia (Article Body)" in sources
+        assert sources["Ghana Wildlife Division (Official)"] == "370 meters"
+        assert sources["Wikipedia (Lead Section)"] == "350 meters"
+        assert sources["Wikipedia (Article Body)"] == "330 meters"
+
+    def test_kakum_micro_spatial_checklist_completeness(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        checklist = r.json()["pre_trip_checklist"]
+        assert len(checklist) == 6
+
+        chk_ids = {c["id"] for c in checklist}
+        assert "chk-backpack" in chk_ids
+        assert "chk-footwear" in chk_ids
+        assert "chk-water" in chk_ids
+        assert "chk-cash" in chk_ids
+
+        # Mandatory items
+        backpack = next(c for c in checklist if c["id"] == "chk-backpack")
+        assert backpack["mandatory"] is True
+        footwear = next(c for c in checklist if c["id"] == "chk-footwear")
+        assert footwear["mandatory"] is True
+
+    def test_kakum_micro_spatial_safety_protocols(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        protocols = r.json()["physical_safety_protocols"]
+        assert "MANDATORY" in protocols["hands_free_rule"]
+        assert "Closed-toe" in protocols["footwear_requirement"]
+        assert "Bridge 1" in protocols["acrophobia_exit_spur"]
+
+    def test_unknown_attraction_micro_spatial_returns_404(self):
+        r = client.get("/api/attractions/cape-coast-castle/micro-spatial")
+        assert r.status_code == 404
+        assert "detail" in r.json()
+
+

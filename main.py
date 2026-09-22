@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
-from models import Attraction, AttractionGeoJSONCollection, SystemHealth
+from models import Attraction, AttractionGeoJSONCollection, SystemHealth, MicroSpatialResponse
 from database import repo
 
 BASE_DIR = Path(__file__).parent
@@ -46,10 +46,10 @@ async def health_check():
     return SystemHealth(
         status="healthy",
         service="ExploreGhana Tourism Geoportal",
-        version="0.2.0-V1.2",
+        version="0.3.0-V1.3",
         total_attractions=len(repo.attractions),
         regions_covered=["Central Region", "Ashanti Region"],
-        spatial_engine="In-Memory Haversine Engine (PostGIS migration planned for V1)",
+        spatial_engine="In-Memory Haversine Engine & Tier-4 Micro-Spatial Vector Engine",
     )
 
 @app.get("/api/categories", response_model=List[Dict[str, Any]], tags=["Attractions"])
@@ -143,6 +143,24 @@ async def get_attraction_by_id(attraction_id: str):
     if not item:
         raise HTTPException(status_code=404, detail=f"Attraction '{attraction_id}' not found")
     return item
+
+@app.get(
+    "/api/attractions/{attraction_id}/micro-spatial",
+    response_model=MicroSpatialResponse,
+    tags=["Tier-4 Micro-Spatial"],
+)
+async def get_attraction_micro_spatial(attraction_id: str):
+    """
+    Retrieve Tier-4 site-level micro-spatial dataset, surveyed micro-POIs,
+    operational parameters, transparently attributed specifications, and pre-trip checklist.
+    """
+    data = repo.get_micro_spatial(attraction_id)
+    if not data:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Micro-spatial dataset not available for '{attraction_id}'. Tier-4 pilot currently active for 'kakum-national-park'.",
+        )
+    return data
 
 if __name__ == "__main__":
     import uvicorn

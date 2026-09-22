@@ -59,3 +59,46 @@ class SystemHealth(BaseModel):
     total_attractions: int
     regions_covered: List[str]
     spatial_engine: str
+
+class MicroSpatialDisputedSource(BaseModel):
+    source_name: str
+    url: Optional[str] = None
+    stated_value: str
+    note: Optional[str] = None
+
+class DisputedSpecification(BaseModel):
+    parameter: str
+    consensus_summary: str
+    sources: List[MicroSpatialDisputedSource]
+
+class PreTripChecklistItem(BaseModel):
+    id: str
+    title: str
+    category: str
+    icon: str
+    mandatory: bool
+    rationale: str
+
+class MicroSpatialFeature(BaseModel):
+    type: str = "Feature"
+    id: str
+    geometry: Dict[str, Any]
+    properties: Dict[str, Any]
+
+class MicroSpatialGeoJSON(BaseModel):
+    type: str = "FeatureCollection"
+    features: List[MicroSpatialFeature]
+
+class MicroSpatialResponse(BaseModel):
+    attraction_id: str
+    site_name: str
+    region_id: str
+    district: str
+    center_coordinates: Dict[str, Any]
+    geojson: MicroSpatialGeoJSON
+    disputed_specifications: List[DisputedSpecification]
+    operational_parameters: Dict[str, Any]
+    physical_safety_protocols: Dict[str, Any]
+    pre_trip_checklist: List[PreTripChecklistItem]
+    official_contacts: List[Dict[str, Any]]
+

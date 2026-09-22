@@ -1,0 +1,628 @@
+{
+  "attraction_id": "kakum-national-park",
+  "site_name": "Kakum National Park & Canopy Walkway",
+  "region_id": "central",
+  "district": "Twifo Hemang Lower Denkyira",
+  "center_coordinates": {
+    "latitude": 5.3495,
+    "longitude": -1.3835,
+    "elevation_base_m": 150,
+    "elevation_canopy_m": 190
+  },
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "kakum-parking-lot",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -1.3832992,
+                5.3481853
+              ],
+              [
+                -1.3831114,
+                5.3482536
+              ],
+              [
+                -1.3830765,
+                5.3482951
+              ],
+              [
+                -1.3831462,
+                5.3484832
+              ],
+              [
+                -1.3833464,
+                5.3486153
+              ],
+              [
+                -1.3834566,
+                5.348631
+              ],
+              [
+                -1.3835668,
+                5.3486019
+              ],
+              [
+                -1.3835983,
+                5.3485481
+              ],
+              [
+                -1.3835916,
+                5.3484294
+              ],
+              [
+                -1.3835286,
+                5.3483018
+              ],
+              [
+                -1.3833937,
+                5.3482144
+              ],
+              [
+                -1.3832992,
+                5.3481853
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "id": "kakum-parking-lot",
+          "name": "Kakum National Park Surface Parking",
+          "category": "parking",
+          "icon": "🅿️",
+          "osm_id": "way/1195989992",
+          "surface": "compacted gravel & asphalt",
+          "description": "Designated parking area for private vehicles, chartered tour buses, and trotro drop-offs.",
+          "operational_notes": "Nominal parking token administered at checkpoint."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-museum-building",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -1.3831724,
+                5.3486453
+              ],
+              [
+                -1.3832043,
+                5.3486613
+              ],
+              [
+                -1.3832113,
+                5.3486475
+              ],
+              [
+                -1.3832164,
+                5.3486376
+              ],
+              [
+                -1.3832669,
+                5.348663
+              ],
+              [
+                -1.3833175,
+                5.3486884
+              ],
+              [
+                -1.3833085,
+                5.3487063
+              ],
+              [
+                -1.3833346,
+                5.3487194
+              ],
+              [
+                -1.383238,
+                5.34891
+              ],
+              [
+                -1.3830788,
+                5.34883
+              ],
+              [
+                -1.3831724,
+                5.3486453
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "id": "kakum-museum-building",
+          "name": "Kakum Ecological Exhibition Hall & Museum",
+          "category": "reception",
+          "icon": "🏛️",
+          "osm_id": "way/1195989990",
+          "description": "Educational exhibition pavilion with displays on rainforest flora, fauna, and conservation history."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-toilets-building",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -1.3831139,
+                5.3486132
+              ],
+              [
+                -1.3830352,
+                5.3486834
+              ],
+              [
+                -1.3829601,
+                5.3486
+              ],
+              [
+                -1.3830388,
+                5.3485298
+              ],
+              [
+                -1.3830763,
+                5.3485715
+              ],
+              [
+                -1.3831139,
+                5.3486132
+              ]
+            ]
+          ]
+        },
+        "properties": {
+          "id": "kakum-toilets-building",
+          "name": "Restrooms & Sanitation Block",
+          "category": "amenity",
+          "icon": "🚻",
+          "osm_id": "way/1195989993",
+          "description": "Clean modern restrooms and handwashing stations located beside the main reception plaza."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-paved-concourse",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -1.383432,
+              5.3485307
+            ],
+            [
+              -1.3836137,
+              5.3487008
+            ],
+            [
+              -1.3836597,
+              5.3487759
+            ],
+            [
+              -1.3838648,
+              5.3491211
+            ],
+            [
+              -1.3840653,
+              5.3495637
+            ],
+            [
+              -1.3840694,
+              5.3498554
+            ],
+            [
+              -1.3839351,
+              5.3501551
+            ],
+            [
+              -1.3839066,
+              5.3502929
+            ],
+            [
+              -1.384045,
+              5.3504185
+            ],
+            [
+              -1.3842403,
+              5.3505765
+            ],
+            [
+              -1.3843216,
+              5.3506899
+            ],
+            [
+              -1.3841683,
+              5.3509822
+            ],
+            [
+              -1.3840671,
+              5.351086
+            ],
+            [
+              -1.3841019,
+              5.3512247
+            ],
+            [
+              -1.3841304,
+              5.3513523
+            ]
+          ]
+        },
+        "properties": {
+          "id": "kakum-paved-concourse",
+          "name": "Visitor Centre Paved Concourse",
+          "category": "trail",
+          "surface": "paving_stones",
+          "osm_id": "way/175246358",
+          "description": "Paved pedestrian walkway connecting parking bay, ticket booth, museum, and trail entrance."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-canopy-trail-approach",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -1.3841487,
+              5.3538662
+            ],
+            [
+              -1.3837171,
+              5.3539865
+            ],
+            [
+              -1.3834352,
+              5.3538376
+            ],
+            [
+              -1.3830266,
+              5.3537258
+            ],
+            [
+              -1.3827936,
+              5.3536027
+            ],
+            [
+              -1.3828367,
+              5.3534107
+            ],
+            [
+              -1.3833374,
+              5.3533935
+            ],
+            [
+              -1.3837344,
+              5.3534537
+            ]
+          ]
+        },
+        "properties": {
+          "id": "kakum-canopy-trail-approach",
+          "name": "Canopy Walkway Forest Approach Path",
+          "category": "trail",
+          "surface": "forest soil & stone steps",
+          "osm_id": "way/175246369",
+          "description": "Climbing footpath ascending from the forest floor up to the Platform 1 suspension bridge launch tower."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-reception-office",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.3835309,
+            5.3487294
+          ]
+        },
+        "properties": {
+          "id": "kakum-reception-office",
+          "name": "Kakum National Park Information Office",
+          "category": "reception",
+          "icon": "ℹ️",
+          "osm_id": "node/1858706096",
+          "survey_source": "GPS track 2009 on foot",
+          "description": "Visitor check-in, official Wildlife Division guide assignment, and general orientation desk."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-ticket-office",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.3838509,
+            5.3489138
+          ]
+        },
+        "properties": {
+          "id": "kakum-ticket-office",
+          "name": "Kakum Main Ticket Office",
+          "category": "reception",
+          "icon": "🎟️",
+          "osm_id": "node/4161231691",
+          "payment_methods": "Cash accepted (MoMo availability subject to cellular network)",
+          "fee_token": "5.00 GHS nominal entry/maintenance token",
+          "description": "Official ticket counter where entry wristbands and canopy walk passes are issued."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-rainforest-cafeteria",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.3835801,
+            5.3488532
+          ]
+        },
+        "properties": {
+          "id": "kakum-rainforest-cafeteria",
+          "name": "Kakum Rainforest Cafeteria & Restaurant",
+          "category": "amenity",
+          "icon": "🍽️",
+          "osm_id": "node/1907494957",
+          "cuisine": "Ghanaian & continental meals, fresh coconut, chilled beverages",
+          "description": "Open-air pavilion dining area offering hot meals and refreshing drinks before or after the canopy hike."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-restrooms-poi",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.383696,
+            5.3490945
+          ]
+        },
+        "properties": {
+          "id": "kakum-restrooms-poi",
+          "name": "Restrooms & Washrooms",
+          "category": "amenity",
+          "icon": "🚻",
+          "osm_id": "node/1907494955",
+          "description": "Public sanitation facilities located adjacent to the cafeteria."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-observation-tower",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.3824917,
+            5.349317
+          ]
+        },
+        "properties": {
+          "id": "kakum-observation-tower",
+          "name": "Forest Observation Tower",
+          "category": "trailhead",
+          "icon": "🔭",
+          "osm_id": "node/11098796677",
+          "description": "Elevated wooden observation platform offering vantage views of the lower canopy and bird activity."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-canopy-launch-platform",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.3834398,
+            5.353622
+          ]
+        },
+        "properties": {
+          "id": "kakum-canopy-launch-platform",
+          "name": "Canopy Walkway Launch Platform (Bridge 1 Start)",
+          "category": "trailhead",
+          "icon": "🌉",
+          "osm_id": "node/558549732",
+          "elevation_m": 190,
+          "height_above_ground_m": 27,
+          "survey_source": "GPS track 2009 on foot",
+          "description": "The starting wooden tree platform where tourists embark onto the suspension bridge series."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-emergency-bailout",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.38375,
+            5.3538
+          ]
+        },
+        "properties": {
+          "id": "kakum-emergency-bailout",
+          "name": "Bridge 1 Emergency Bailout Exit Route",
+          "category": "safety_exit",
+          "icon": "🚨",
+          "description": "Critical spatial safety feature: after completing Bridge 1, visitors experiencing acrophobia (vertigo) can safely exit down a designated ground staircase without being compelled to cross the remaining 6 bridges."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-afafranto-campsite",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.3815,
+            5.352
+          ]
+        },
+        "properties": {
+          "id": "kakum-afafranto-campsite",
+          "name": "Afafranto Rainforest Campsite",
+          "category": "camping",
+          "icon": "⛺",
+          "description": "Secluded overnight camping ground within the secondary rainforest clearing. Requires prior booking and Wildlife Division ranger escort."
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "kakum-historic-big-tree",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -1.3862389,
+            5.3561982
+          ]
+        },
+        "properties": {
+          "id": "kakum-historic-big-tree",
+          "name": "Historic Giant Silk Cotton Tree (Ceiba pentandra)",
+          "category": "nature",
+          "icon": "🌳",
+          "osm_id": "node/1907489067",
+          "description": "A colossal centuries-old emergent rainforest giant anchoring the local canopy ecosystem."
+        }
+      }
+    ]
+  },
+  "disputed_specifications": [
+    {
+      "parameter": "Total Canopy Walkway Length",
+      "consensus_summary": "Documented between 330 m and 370 m across authoritative sources; universally verified as 7 suspension bridges reaching up to 40 m (130 ft) above the forest floor.",
+      "sources": [
+        {
+          "source_name": "Ghana Wildlife Division (Official)",
+          "url": "https://ghanawildlife.org",
+          "stated_value": "370 meters",
+          "note": "Official state agency governing wildlife protected areas in Ghana"
+        },
+        {
+          "source_name": "Wikipedia (Lead Section)",
+          "url": "https://en.wikipedia.org/wiki/Kakum_National_Park",
+          "stated_value": "350 meters",
+          "note": "Commonly cited travel press metric"
+        },
+        {
+          "source_name": "Wikipedia (Article Body)",
+          "url": "https://en.wikipedia.org/wiki/Kakum_National_Park#Canopy_walkway",
+          "stated_value": "330 meters",
+          "note": "Alternate citation within academic references"
+        }
+      ]
+    },
+    {
+      "parameter": "Number of Suspension Bridges",
+      "consensus_summary": "7 contiguous rope bridges suspended from emergent Silk Cotton (Ceiba pentandra) trees.",
+      "sources": [
+        {
+          "source_name": "Ghana Wildlife Division & UNESCO",
+          "url": "https://ghanawildlife.org",
+          "stated_value": "7 bridges",
+          "note": "Unanimous consensus across all governing records"
+        }
+      ]
+    },
+    {
+      "parameter": "Maximum Walkway Height",
+      "consensus_summary": "Approximately 40 meters (130 feet) at the highest forest ravine span.",
+      "sources": [
+        {
+          "source_name": "Ghana Wildlife Division & Conservation International",
+          "url": "https://ghanawildlife.org",
+          "stated_value": "Up to 40 meters (130 ft)",
+          "note": "Constructed in 1995 by Canadian engineers and local forest rangers"
+        }
+      ]
+    }
+  ],
+  "operational_parameters": {
+    "recommended_arrival_window": "07:30 - 09:30 GMT (Early morning avoids mid-day tropical heat, catches maximum bird and primate vocalizations, and precedes peak school/tour bus arrivals)",
+    "estimated_duration_hours": 3.5,
+    "canopy_crossing_duration_mins": 45,
+    "physical_effort_grade": "Moderate to Strenuous — involves an uphill stone stair climb (~15-20 mins) before reaching Platform 1",
+    "cellular_coverage": "Moderate 3G/4G coverage around the Visitor Reception plaza; signal rapidly drops to 0 bars inside deep canopy forest trails",
+    "payment_advice": "Carry Ghana Cedis (cash) as backup. Mobile Money (MTN MoMo / Telecel Cash) is accepted at the reception desk but can be disrupted by intermittent network lag."
+  },
+  "physical_safety_protocols": {
+    "hands_free_rule": "MANDATORY. Visitors must maintain both hands free to hold the safety side-guide ropes. Handheld shoulder bags, unsecured mobile phones, or loose objects are strictly prohibited while crossing the bridges.",
+    "footwear_requirement": "Closed-toe walking shoes, trainers, or hiking boots with rubber traction. High heels, flip-flops, and slick-soled dress shoes are strictly disallowed on the canopy walkway.",
+    "acrophobia_exit_spur": "An emergency bailout staircase is situated directly after Bridge 1. Visitors feeling overwhelmed by vertigo may exit safely back to the ground path without completing bridges 2 through 7.",
+    "weather_safety_rule": "The canopy walkway is immediately closed during active thunderstorms, high wind gusts, or torrential downpours for visitor safety."
+  },
+  "pre_trip_checklist": [
+    {
+      "id": "chk-backpack",
+      "title": "Small Hands-Free Daypack",
+      "category": "gear",
+      "icon": "🎒",
+      "mandatory": true,
+      "rationale": "Mandatory for keeping both hands free to grip suspension ropes at all times."
+    },
+    {
+      "id": "chk-footwear",
+      "title": "Closed-Toe Shoes with Rubber Grip",
+      "category": "gear",
+      "icon": "👟",
+      "mandatory": true,
+      "rationale": "Wooden planks and uphill stone steps can be slick from tropical forest humidity and morning dew."
+    },
+    {
+      "id": "chk-water",
+      "title": "1 Litre Refillable Water Bottle",
+      "category": "hydration",
+      "icon": "💧",
+      "mandatory": true,
+      "rationale": "High humidity causes rapid dehydration during the uphill forest climb."
+    },
+    {
+      "id": "chk-poncho",
+      "title": "Compact Rain Poncho / Light Jacket",
+      "category": "apparel",
+      "icon": "🌧️",
+      "mandatory": false,
+      "rationale": "Tropical rainforest showers can occur with little warning even during dry periods."
+    },
+    {
+      "id": "chk-repellent",
+      "title": "Insect Repellent / Anti-Mosquito Spray",
+      "category": "health",
+      "icon": "🦟",
+      "mandatory": false,
+      "rationale": "Recommended for the ground-level trails (Sunbird and Medicinal Tree walks)."
+    },
+    {
+      "id": "chk-cash",
+      "title": "Cash Backup (Ghana Cedis - GHS)",
+      "category": "logistics",
+      "icon": "💵",
+      "mandatory": true,
+      "rationale": "For gate maintenance token (5 GHS) and in case mobile network delays MoMo transactions."
+    }
+  ],
+  "official_contacts": [
+    {
+      "entity": "Ghana Wildlife Division (Forestry Commission)",
+      "channel": "Official Website",
+      "value": "https://ghanawildlife.org",
+      "note": "Governing statutory agency for Kakum National Park and protected wildlife areas"
+    },
+    {
+      "entity": "Kakum National Park Visitor Information",
+      "channel": "Forestry Commission Regional Directorate",
+      "value": "Cape Coast, Central Region, Ghana",
+      "note": "Enquiries for group bookings, student delegations, and Afafranto campsite reservations"
+    },
+    {
+      "entity": "Ghana Tourism Authority (GTA)",
+      "channel": "Official Portal",
+      "value": "https://visitghana.com",
+      "note": "National tourism promotion and certified destination register"
+    }
+  ]
+}

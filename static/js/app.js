@@ -2,8 +2,11 @@
 
 // Application State
 const state = {
-  currentTier: 'national', // 'national' | 'regional'
+  currentTier: 'national', // 'national' | 'regional' | 'site'
   selectedRegionId: null,  // 'central' | 'ashanti'
+  selectedSiteId: null,    // 'kakum-national-park'
+  siteData: null,          // Micro-spatial dataset for active site
+  microMarkers: {},        // Map markers for micro-POIs
   regions: [],             // All 16 regions loaded from /api/regions
   districts: [],           // Districts for active region
   allAttractions: [],      // All 45 attractions loaded from /api/attractions
@@ -89,6 +92,19 @@ const CATEGORY_META = {
   'Parks & Recreation': { pinClass: 'pin-nature', icon: '🌳', label: 'Parks & Recreation' },
   'Accommodation & Luxury': { pinClass: 'pin-default', icon: '🏨', label: 'Resorts & Stays' }
 };
+
+// Micro-POI metadata for Tier-4 Site Level
+const MICRO_POI_META = {
+  parking: { pinClass: 'micro-pin-parking', icon: '🅿️', label: 'Parking & Arrival' },
+  reception: { pinClass: 'micro-pin-reception', icon: 'ℹ️', label: 'Visitor Services Hub' },
+  amenity: { pinClass: 'micro-pin-amenity', icon: '🍽️', label: 'Service Amenity' },
+  trailhead: { pinClass: 'micro-pin-trailhead', icon: '🌉', label: 'Trail Launch Platform' },
+  trail: { pinClass: 'micro-pin-trailhead', icon: '🥾', label: 'Walking Concourse' },
+  safety_exit: { pinClass: 'micro-pin-safety', icon: '🚨', label: 'Emergency Bailout Exit' },
+  camping: { pinClass: 'micro-pin-camping', icon: '⛺', label: 'Rainforest Campsite' },
+  nature: { pinClass: 'micro-pin-nature', icon: '🌳', label: 'Emergent Giant' }
+};
+
 
 // Initialize MapLibre GL Map
 const map = new maplibregl.Map({
@@ -265,9 +281,12 @@ function handleHashChange() {
 
   const regionSlug = parts[0] || null;
   const siteSlug = parts[1] || null;
+  const subView = parts[2] || null;
 
   if (!regionSlug) {
     transitionToTier('national');
+  } else if (siteSlug === 'kakum-national-park' && subView === 'console') {
+    enterSiteConsole(regionSlug, siteSlug);
   } else if (regionSlug === 'central' || regionSlug === 'ashanti') {
     transitionToTier('regional', regionSlug, siteSlug);
   } else {
@@ -277,15 +296,29 @@ function handleHashChange() {
 
 // Transition between National and Regional Tiers
 async function transitionToTier(tier, regionId = null, siteSlug = null) {
+  // If transitioning out of site console, clean it up
+  if (state.currentTier === 'site') {
+    exitSiteConsole(false);
+  }
+
   state.currentTier = tier;
   state.selectedRegionId = regionId;
 
   const nationalPanel = document.getElementById('national-panel');
   const regionalPanel = document.getElementById('regional-panel');
+  const siteConsolePanel = document.getElementById('site-console-panel');
+  if (siteConsolePanel) siteConsolePanel.classList.add('hidden');
+
   const bcSepRegion = document.getElementById('bc-sep-region');
   const bcRegion = document.getElementById('bc-region');
   const bcSepAttraction = document.getElementById('bc-sep-attraction');
   const bcAttraction = document.getElementById('bc-attraction');
+  const bcSepConsole = document.getElementById('bc-sep-console');
+  const bcConsole = document.getElementById('bc-console');
+
+  if (bcSepConsole) bcSepConsole.classList.add('hidden');
+  if (bcConsole) bcConsole.classList.add('hidden');
+
 
   if (tier === 'national') {
     // 1. Sidebar Panels
@@ -661,7 +694,10 @@ function renderMarkers() {
           <p class="text-[11px] text-gray-500 mt-1">${item.district}</p>
           <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 text-[11px]">
             <span class="font-semibold text-gray-700">From GHS ${item.entry_fee_ghs.local_adult}</span>
-            <button onclick="openModal('${item.id}')" class="text-ghana-green font-bold hover:underline">Details &rarr;</button>
+            <div class="flex items-center space-x-1.5">
+              ${item.id === 'kakum-national-park' ? `<button onclick="enterSiteConsole('central', 'kakum-national-park')" class="text-emerald-700 font-bold hover:underline text-[10px]">🌲 Console</button>` : ''}
+              <button onclick="openModal('${item.id}')" class="text-ghana-green font-bold hover:underline">Details &rarr;</button>
+            </div>
           </div>
         </div>
       </div>
@@ -746,9 +782,16 @@ function renderAttractionsList() {
             <div>
               ${feeText}
             </div>
-            <button onclick="event.stopPropagation(); openModal('${item.id}')" class="bg-ghana-green/10 hover:bg-ghana-green text-ghana-green hover:text-white px-2.5 py-1 rounded-lg font-semibold text-[11px] transition-all">
-              Details
-            </button>
+            <div class="flex items-center space-x-1.5">
+              ${item.id === 'kakum-national-park' ? `
+                <button onclick="event.stopPropagation(); enterSiteConsole('central', 'kakum-national-park')" class="bg-emerald-800 hover:bg-emerald-900 text-white px-2.5 py-1 rounded-lg font-bold text-[10px] flex items-center space-x-1 shadow-sm transition-all">
+                  <span>🌲 Site Console</span>
+                </button>
+              ` : ''}
+              <button onclick="event.stopPropagation(); openModal('${item.id}')" class="bg-ghana-green/10 hover:bg-ghana-green text-ghana-green hover:text-white px-2.5 py-1 rounded-lg font-semibold text-[11px] transition-all">
+                Details
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -967,24 +1010,48 @@ function openModal(id) {
       ` : ''}
 
       <!-- Action Buttons -->
-      <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
-        <a 
-          href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" 
-          target="_blank"
-          class="flex-1 bg-ghana-green hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 shadow transition-all"
-        >
-          <i data-lucide="navigation-2" class="w-4 h-4"></i>
-          <span>Get Driving Directions</span>
-        </a>
+      <div class="pt-4 border-t border-gray-200 flex flex-col gap-3">
+        ${item.id === 'kakum-national-park' ? `
+          <div class="p-3.5 bg-gradient-to-r from-emerald-950 to-ghana-dark rounded-xl border border-emerald-500/40 text-white shadow-md">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-[10px] bg-ghana-gold text-ghana-dark font-black px-2 py-0.5 rounded-full uppercase">Tier-4 Pilot Active</span>
+                <h4 class="text-sm font-black text-white mt-1">Grounded Micro-Spatial Site Console</h4>
+                <p class="text-[11px] text-emerald-200 mt-0.5 leading-relaxed">
+                  Inspect surveyed parking, reception hub, 7-bridge launch platform, emergency bailout path, and interactive pre-trip checklist.
+                </p>
+              </div>
+              <span class="text-2xl flex-shrink-0 ml-2">🌲</span>
+            </div>
+            <button 
+              onclick="closeModal(false); enterSiteConsole('central', 'kakum-national-park')"
+              class="w-full mt-3 bg-ghana-gold hover:bg-yellow-400 text-ghana-dark font-black py-2.5 px-4 rounded-lg text-xs flex items-center justify-center space-x-2 shadow transition-all cursor-pointer"
+            >
+              <i data-lucide="map" class="w-4 h-4"></i>
+              <span>Launch Site Console & Interactive Checklist &rarr;</span>
+            </button>
+          </div>
+        ` : ''}
 
-        <a 
-          href="https://wa.me/?text=Check%20out%20${encodeURIComponent(item.name)}%20on%20ExploreGhana:%20${encodeURIComponent(window.location.origin + '/#/' + regId + '/' + item.id)}"
-          target="_blank"
-          class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 border border-emerald-300 transition-all"
-        >
-          <i data-lucide="share-2" class="w-4 h-4"></i>
-          <span>Share via WhatsApp</span>
-        </a>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a 
+            href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" 
+            target="_blank"
+            class="flex-1 bg-ghana-green hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 shadow transition-all"
+          >
+            <i data-lucide="navigation-2" class="w-4 h-4"></i>
+            <span>Get Driving Directions</span>
+          </a>
+
+          <a 
+            href="https://wa.me/?text=Check%20out%20${encodeURIComponent(item.name)}%20on%20ExploreGhana:%20${encodeURIComponent(window.location.origin + '/#/' + regId + '/' + item.id)}"
+            target="_blank"
+            class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 border border-emerald-300 transition-all"
+          >
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+            <span>Share via WhatsApp</span>
+          </a>
+        </div>
       </div>
 
     </div>
@@ -1012,24 +1079,28 @@ function switchModalHero(imgSrc, btnEl) {
 }
 
 // Close Modal
-function closeModal() {
+function closeModal(updateHash = true) {
   const modal = document.getElementById('detail-modal');
   modal.classList.add('opacity-0');
   setTimeout(() => modal.classList.add('hidden'), 200);
 
-  // Clear site breadcrumb
-  const bcSepAttraction = document.getElementById('bc-sep-attraction');
-  const bcAttraction = document.getElementById('bc-attraction');
-  if (bcSepAttraction && bcAttraction) {
-    bcSepAttraction.classList.add('hidden');
-    bcAttraction.classList.add('hidden');
+  // Clear site breadcrumb if not transitioning to console
+  if (state.currentTier !== 'site') {
+    const bcSepAttraction = document.getElementById('bc-sep-attraction');
+    const bcAttraction = document.getElementById('bc-attraction');
+    if (bcSepAttraction && bcAttraction) {
+      bcSepAttraction.classList.add('hidden');
+      bcAttraction.classList.add('hidden');
+    }
   }
 
-  // Restore hash to region if we were viewing a site
-  if (state.selectedRegionId) {
-    window.location.hash = `#/${state.selectedRegionId}`;
-  } else {
-    window.location.hash = '#/';
+  // Restore hash to region if we were viewing a site and updateHash is true
+  if (updateHash) {
+    if (state.selectedRegionId) {
+      window.location.hash = `#/${state.selectedRegionId}`;
+    } else {
+      window.location.hash = '#/';
+    }
   }
 }
 
@@ -1111,6 +1182,10 @@ function setupEventListeners() {
       if (state.selectedRegionId) {
         loadDistrictsForRegion(state.selectedRegionId);
       }
+      if (state.currentTier === 'site' && state.siteData) {
+        setupMicroSpatialLayers(state.siteData.geojson);
+        renderMicroMarkers(state.siteData.geojson);
+      }
     }, 300);
   });
   document.getElementById('btn-style-satellite').addEventListener('click', () => {
@@ -1120,6 +1195,10 @@ function setupEventListeners() {
       if (state.selectedRegionId) {
         loadDistrictsForRegion(state.selectedRegionId);
       }
+      if (state.currentTier === 'site' && state.siteData) {
+        setupMicroSpatialLayers(state.siteData.geojson);
+        renderMicroMarkers(state.siteData.geojson);
+      }
     }, 300);
   });
 
@@ -1128,6 +1207,9 @@ function setupEventListeners() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('-translate-x-full');
   });
+
+  // Setup Tier-4 Site Console Tab Listeners
+  setupSiteConsoleTabs();
 }
 
 // Filter Attractions based on active category & query
@@ -1258,3 +1340,518 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+
+// ---------------------------------------------------------------------------
+// 7. Tier-4 Site Console & Micro-Spatial Pilot (Kakum National Park)
+// ---------------------------------------------------------------------------
+
+const CHECKLIST_STORAGE_KEY = 'exploreghana_kakum_checklist';
+
+async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national-park') {
+  state.currentTier = 'site';
+  state.selectedRegionId = regionId;
+  state.selectedSiteId = siteSlug;
+
+  // Update hash without triggering redundant loop
+  if (window.location.hash !== `#/${regionId}/${siteSlug}/console`) {
+    window.location.hash = `#/${regionId}/${siteSlug}/console`;
+  }
+
+  // Toggle sidebar panels
+  const nationalPanel = document.getElementById('national-panel');
+  const regionalPanel = document.getElementById('regional-panel');
+  const siteConsolePanel = document.getElementById('site-console-panel');
+  if (nationalPanel) nationalPanel.classList.add('hidden');
+  if (regionalPanel) regionalPanel.classList.add('hidden');
+  if (siteConsolePanel) siteConsolePanel.classList.remove('hidden');
+
+  // Update Breadcrumbs
+  const bcSepRegion = document.getElementById('bc-sep-region');
+  const bcRegion = document.getElementById('bc-region');
+  const bcSepAttraction = document.getElementById('bc-sep-attraction');
+  const bcAttraction = document.getElementById('bc-attraction');
+  const bcSepConsole = document.getElementById('bc-sep-console');
+  const bcConsole = document.getElementById('bc-console');
+
+  if (bcSepRegion && bcRegion) {
+    bcSepRegion.classList.remove('hidden');
+    bcRegion.classList.remove('hidden');
+    bcRegion.innerText = regionId === 'ashanti' ? 'Ashanti Region' : 'Central Region';
+    bcRegion.href = `#/${regionId}`;
+  }
+  if (bcSepAttraction && bcAttraction) {
+    bcSepAttraction.classList.remove('hidden');
+    bcAttraction.classList.remove('hidden');
+    bcAttraction.innerText = 'Kakum National Park';
+    bcAttraction.href = `#/${regionId}/${siteSlug}`;
+  }
+  if (bcSepConsole && bcConsole) {
+    bcSepConsole.classList.remove('hidden');
+    bcConsole.classList.remove('hidden');
+  }
+
+  // Hide general regional markers and boundary lines
+  hideSiteMarkers();
+  hideRegionBadges();
+  setDistrictsVisibility(false);
+
+  // Fetch micro-spatial dataset
+  try {
+    const res = await fetch(`/api/attractions/${siteSlug}/micro-spatial`);
+    if (!res.ok) throw new Error(`Failed to load micro-spatial dataset for ${siteSlug}`);
+    const data = await res.json();
+    state.siteData = data;
+
+    // Fly camera directly to Kakum site center at high zoom with angle
+    const sidebarWidth = window.innerWidth >= 768 ? 440 : 20;
+    map.flyTo({
+      center: [data.center_coordinates.longitude, data.center_coordinates.latitude],
+      zoom: 16.6,
+      pitch: 45,
+      bearing: -12,
+      duration: 1800,
+      essential: true
+    });
+
+    // Render Micro-Spatial Vector Layers (Parking, Buildings, Concourse, Trails)
+    setupMicroSpatialLayers(data.geojson);
+
+    // Render HTML Markers on Map
+    renderMicroMarkers(data.geojson);
+
+    // Render Sidebar Console Panels
+    renderMicroPOIsTab(data.geojson);
+    renderChecklistTab(data.pre_trip_checklist);
+    renderDisputedSpecsTab(data.disputed_specifications);
+    renderSafetyTab(data.physical_safety_protocols, data.official_contacts);
+
+  } catch (err) {
+    console.error('Error in enterSiteConsole:', err);
+    showToast('Failed to load Kakum micro-spatial dataset');
+  }
+
+  lucide.createIcons();
+}
+
+function exitSiteConsole(updateHash = true) {
+  // Clear micro markers from map
+  Object.values(state.microMarkers).forEach(m => m.remove());
+  state.microMarkers = {};
+
+  // Remove micro-spatial vector layers
+  removeMicroSpatialLayers();
+
+  // Hide console panel
+  const siteConsolePanel = document.getElementById('site-console-panel');
+  if (siteConsolePanel) siteConsolePanel.classList.add('hidden');
+
+  // Clear console breadcrumb
+  const bcSepConsole = document.getElementById('bc-sep-console');
+  const bcConsole = document.getElementById('bc-console');
+  if (bcSepConsole && bcConsole) {
+    bcSepConsole.classList.add('hidden');
+    bcConsole.classList.add('hidden');
+  }
+
+  state.currentTier = 'regional';
+  state.selectedSiteId = null;
+
+  if (updateHash) {
+    window.location.hash = `#/${state.selectedRegionId || 'central'}`;
+  }
+}
+
+function setupMicroSpatialLayers(geojson) {
+  if (map.getSource('kakum-micro-source')) {
+    map.getSource('kakum-micro-source').setData(geojson);
+    ['kakum-parking-fill', 'kakum-parking-line', 'kakum-buildings-fill', 'kakum-buildings-line', 'kakum-paved-line', 'kakum-trail-line'].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
+    });
+    return;
+  }
+
+  map.addSource('kakum-micro-source', {
+    type: 'geojson',
+    data: geojson
+  });
+
+  // 1. Parking fill
+  map.addLayer({
+    id: 'kakum-parking-fill',
+    type: 'fill',
+    source: 'kakum-micro-source',
+    filter: ['==', ['get', 'category'], 'parking'],
+    paint: {
+      'fill-color': '#2563eb',
+      'fill-opacity': 0.35
+    }
+  });
+
+  // 2. Parking outline
+  map.addLayer({
+    id: 'kakum-parking-line',
+    type: 'line',
+    source: 'kakum-micro-source',
+    filter: ['==', ['get', 'category'], 'parking'],
+    paint: {
+      'line-color': '#1d4ed8',
+      'line-width': 2.5
+    }
+  });
+
+  // 3. Buildings fill (Museum, Toilets)
+  map.addLayer({
+    id: 'kakum-buildings-fill',
+    type: 'fill',
+    source: 'kakum-micro-source',
+    filter: ['==', '$type', 'Polygon'],
+    paint: {
+      'fill-color': '#059669',
+      'fill-opacity': 0.4
+    }
+  });
+
+  // 4. Buildings outline
+  map.addLayer({
+    id: 'kakum-buildings-line',
+    type: 'line',
+    source: 'kakum-micro-source',
+    filter: ['==', '$type', 'Polygon'],
+    paint: {
+      'line-color': '#047857',
+      'line-width': 2
+    }
+  });
+
+  // 5. Paved paths line
+  map.addLayer({
+    id: 'kakum-paved-line',
+    type: 'line',
+    source: 'kakum-micro-source',
+    filter: ['==', ['get', 'id'], 'kakum-paved-concourse'],
+    paint: {
+      'line-color': '#f59e0b',
+      'line-width': 3.5,
+      'line-dasharray': [2, 2]
+    }
+  });
+
+  // 6. Canopy approach trail line
+  map.addLayer({
+    id: 'kakum-trail-line',
+    type: 'line',
+    source: 'kakum-micro-source',
+    filter: ['==', ['get', 'id'], 'kakum-canopy-trail-approach'],
+    paint: {
+      'line-color': '#10b981',
+      'line-width': 3
+    }
+  });
+}
+
+function removeMicroSpatialLayers() {
+  ['kakum-parking-fill', 'kakum-parking-line', 'kakum-buildings-fill', 'kakum-buildings-line', 'kakum-paved-line', 'kakum-trail-line'].forEach(id => {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+  });
+}
+
+function renderMicroMarkers(geojson) {
+  // Clear existing micro markers
+  Object.values(state.microMarkers).forEach(m => m.remove());
+  state.microMarkers = {};
+
+  const pointFeatures = geojson.features.filter(f => f.geometry.type === 'Point');
+
+  pointFeatures.forEach(feat => {
+    const props = feat.properties;
+    const coords = feat.geometry.coordinates;
+    const cat = props.category || 'nature';
+    const meta = MICRO_POI_META[cat] || { pinClass: 'micro-pin-nature', icon: '📍', label: cat };
+
+    const el = document.createElement('div');
+    el.className = `micro-pin ${meta.pinClass}`;
+    el.id = `micro-pin-${props.id}`;
+    el.innerHTML = `<span>${props.icon || meta.icon}</span>`;
+
+    const popup = new maplibregl.Popup({ offset: 15, closeButton: true }).setHTML(`
+      <div class="p-3 max-w-xs text-left">
+        <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">${meta.label}</span>
+        <h4 class="font-bold text-xs text-gray-900 leading-tight mt-0.5">${props.name}</h4>
+        ${props.elevation_m ? `<span class="text-[10px] text-gray-500 block mt-0.5">Elevation: ${props.elevation_m}m</span>` : ''}
+        <p class="text-[11px] text-gray-600 mt-1.5 leading-relaxed">${props.description}</p>
+        ${props.fee_token ? `<div class="mt-2 text-[10px] font-bold text-emerald-800 bg-emerald-50 p-1.5 rounded border border-emerald-200">Token: ${props.fee_token}</div>` : ''}
+      </div>
+    `);
+
+    el.addEventListener('click', () => {
+      popup.addTo(map);
+    });
+
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([coords[0], coords[1]])
+      .setPopup(popup)
+      .addTo(map);
+
+    state.microMarkers[props.id] = marker;
+  });
+}
+
+function renderMicroPOIsTab(geojson) {
+  const container = document.getElementById('micro-pois-list');
+  const countEl = document.getElementById('micro-poi-count');
+  if (!container) return;
+
+  if (countEl) countEl.innerText = `${geojson.features.length} Features`;
+
+  container.innerHTML = geojson.features.map(feat => {
+    const props = feat.properties;
+    const isPoint = feat.geometry.type === 'Point';
+    const coords = isPoint ? feat.geometry.coordinates : (feat.geometry.type === 'Polygon' ? feat.geometry.coordinates[0][0] : feat.geometry.coordinates[0]);
+
+    return `
+      <div 
+        onclick="flyToMicroFeature('${props.id}', ${coords[0]}, ${coords[1]})"
+        class="p-2.5 bg-white rounded-xl border border-gray-200 hover:border-emerald-500 hover:shadow-sm cursor-pointer transition-all flex items-start space-x-2.5 group"
+      >
+        <span class="text-base flex-shrink-0 mt-0.5">${props.icon || (feat.geometry.type === 'Polygon' ? '📐' : '🥾')}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <h5 class="text-xs font-bold text-gray-900 leading-snug group-hover:text-emerald-700 transition-colors truncate">
+              ${props.name}
+            </h5>
+            <span class="text-[9px] bg-gray-100 text-gray-600 font-semibold px-1.5 py-0.5 rounded capitalize flex-shrink-0">
+              ${props.category || feat.geometry.type}
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-500 line-clamp-2 mt-0.5 leading-tight">
+            ${props.description}
+          </p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function flyToMicroFeature(id, lon, lat) {
+  map.flyTo({
+    center: [lon, lat],
+    zoom: 17.5,
+    pitch: 45,
+    duration: 1200
+  });
+
+  if (state.microMarkers[id]) {
+    state.microMarkers[id].togglePopup();
+  }
+}
+
+// Checklist Storage & State Helpers
+function getCheckedItems() {
+  try {
+    const saved = localStorage.getItem(CHECKLIST_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCheckedItems(checked) {
+  try {
+    localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checked));
+  } catch (e) {
+    console.warn('Could not save checklist to localStorage:', e);
+  }
+}
+
+function toggleChecklistItem(itemId) {
+  let checked = getCheckedItems();
+  if (checked.includes(itemId)) {
+    checked = checked.filter(id => id !== itemId);
+  } else {
+    checked.push(itemId);
+  }
+  saveCheckedItems(checked);
+
+  updateChecklistUI();
+}
+
+function updateChecklistUI() {
+  const checked = getCheckedItems();
+  const total = (state.siteData && state.siteData.pre_trip_checklist) ? state.siteData.pre_trip_checklist.length : 6;
+  const count = checked.length;
+  const pct = Math.round((count / total) * 100);
+
+  const progBar = document.getElementById('checklist-progress-bar');
+  const progText = document.getElementById('checklist-progress-text');
+  const badge = document.getElementById('checklist-counter-badge');
+
+  if (progBar) progBar.style.width = `${pct}%`;
+  if (progText) progText.innerText = `${count} of ${total} Ready (${pct}%)`;
+  if (badge) badge.innerText = `${count}/${total}`;
+
+  document.querySelectorAll('.checklist-item-card').forEach(card => {
+    const id = card.dataset.id;
+    const isChecked = checked.includes(id);
+    const cb = card.querySelector('input[type="checkbox"]');
+    if (cb) cb.checked = isChecked;
+
+    if (isChecked) {
+      card.classList.add('bg-emerald-50', 'border-emerald-300');
+      card.classList.remove('bg-white', 'border-gray-200');
+    } else {
+      card.classList.remove('bg-emerald-50', 'border-emerald-300');
+      card.classList.add('bg-white', 'border-gray-200');
+    }
+  });
+}
+
+function renderChecklistTab(items) {
+  const container = document.getElementById('checklist-items-container');
+  if (!container) return;
+
+  const checked = getCheckedItems();
+
+  container.innerHTML = items.map(item => {
+    const isChecked = checked.includes(item.id);
+
+    return `
+      <label 
+        data-id="${item.id}"
+        class="checklist-item-card p-3 rounded-xl border transition-all cursor-pointer flex items-start space-x-3 select-none ${isChecked ? 'bg-emerald-50 border-emerald-300' : 'bg-white border-gray-200 hover:border-gray-300'}"
+      >
+        <input 
+          type="checkbox" 
+          ${isChecked ? 'checked' : ''} 
+          onchange="toggleChecklistItem('${item.id}')"
+          class="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+        />
+        <div class="flex-1">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-sm">${item.icon}</span>
+            <span class="text-xs font-bold text-gray-900">${item.title}</span>
+            ${item.mandatory ? '<span class="text-[9px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.2 rounded uppercase">Mandatory</span>' : '<span class="text-[9px] bg-gray-100 text-gray-600 font-medium px-1.5 py-0.2 rounded">Recommended</span>'}
+          </div>
+          <p class="text-[11px] text-gray-500 mt-1 leading-snug">
+            ${item.rationale}
+          </p>
+        </div>
+      </label>
+    `;
+  }).join('');
+
+  updateChecklistUI();
+}
+
+function renderDisputedSpecsTab(specs) {
+  const container = document.getElementById('disputed-specs-container');
+  if (!container) return;
+
+  container.innerHTML = specs.map(spec => {
+    return `
+      <div class="bg-white rounded-xl border border-gray-200 p-3.5 space-y-2.5">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-1.5">
+          <h4 class="text-xs font-bold text-gray-900 flex items-center space-x-1.5">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span>${spec.parameter}</span>
+          </h4>
+        </div>
+
+        <div class="p-2.5 bg-gray-50 rounded-lg text-xs text-gray-800 font-medium leading-relaxed">
+          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Consensus Finding</span>
+          ${spec.consensus_summary}
+        </div>
+
+        <div class="space-y-1.5">
+          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Authoritative Source Citations</span>
+          ${spec.sources.map(s => `
+            <div class="flex items-start justify-between p-2 rounded-lg bg-gray-50/70 border border-gray-100 text-xs">
+              <div>
+                <span class="font-bold text-gray-900 block">${s.source_name}</span>
+                <span class="text-[10px] text-gray-500">${s.note}</span>
+              </div>
+              <span class="font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-xs flex-shrink-0 ml-2">
+                ${s.stated_value}
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSafetyTab(protocols, contacts) {
+  const safetyContainer = document.getElementById('safety-protocols-container');
+  const contactsContainer = document.getElementById('official-contacts-container');
+
+  if (safetyContainer && protocols) {
+    safetyContainer.innerHTML = `
+      <div class="p-2.5 bg-white/80 rounded-lg border border-rose-100">
+        <strong class="text-rose-900 block mb-0.5">Hands-Free Mandate</strong>
+        <p class="text-[11px] text-gray-700">${protocols.hands_free_rule}</p>
+      </div>
+      <div class="p-2.5 bg-white/80 rounded-lg border border-rose-100">
+        <strong class="text-rose-900 block mb-0.5">Footwear Requirements</strong>
+        <p class="text-[11px] text-gray-700">${protocols.footwear_requirement}</p>
+      </div>
+      <div class="p-2.5 bg-white/80 rounded-lg border border-rose-100">
+        <strong class="text-rose-900 block mb-0.5">Emergency Vertigo Bailout Spur</strong>
+        <p class="text-[11px] text-gray-700">${protocols.acrophobia_exit_spur}</p>
+      </div>
+      <div class="p-2.5 bg-white/80 rounded-lg border border-rose-100">
+        <strong class="text-rose-900 block mb-0.5">Weather Suspensions</strong>
+        <p class="text-[11px] text-gray-700">${protocols.weather_safety_rule}</p>
+      </div>
+    `;
+  }
+
+  if (contactsContainer && contacts) {
+    contactsContainer.innerHTML = contacts.map(c => `
+      <div class="p-2.5 bg-gray-50 rounded-lg border border-gray-100">
+        <div class="flex items-center justify-between">
+          <strong class="text-gray-900 text-xs">${c.entity}</strong>
+          <span class="text-[10px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded">${c.channel}</span>
+        </div>
+        <a href="${c.value.startsWith('http') ? c.value : '#'}" target="_blank" rel="noreferrer" class="text-emerald-700 hover:underline text-xs font-semibold block mt-0.5">
+          ${c.value}
+        </a>
+        <p class="text-[10px] text-gray-500 mt-0.5">${c.note}</p>
+      </div>
+    `).join('');
+  }
+}
+
+function setupSiteConsoleTabs() {
+  const tabs = document.querySelectorAll('.site-console-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => {
+        t.classList.remove('active', 'border-emerald-700', 'text-emerald-800');
+        t.classList.add('border-transparent', 'text-gray-500');
+      });
+      tab.classList.add('active', 'border-emerald-700', 'text-emerald-800');
+      tab.classList.remove('border-transparent', 'text-gray-500');
+
+      const targetTab = tab.dataset.tab;
+      ['pois', 'checklist', 'specs', 'safety'].forEach(tabName => {
+        const pane = document.getElementById(`tab-pane-${tabName}`);
+        if (pane) {
+          if (tabName === targetTab) {
+            pane.classList.remove('hidden');
+          } else {
+            pane.classList.add('hidden');
+          }
+        }
+      });
+    });
+  });
+
+  // Back to regional button
+  const backBtn = document.getElementById('btn-back-regional');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      exitSiteConsole(true);
+    });
+  }
+}
+

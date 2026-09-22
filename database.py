@@ -12,6 +12,7 @@ REGIONS_FILE = DATA_DIR / "ghana_regions_adm1.json"
 FALLBACK_REGIONS_FILE = DATA_DIR / "regions_geojson.json"
 CENTRAL_DISTRICTS_FILE = DATA_DIR / "central_districts_adm2.json"
 ASHANTI_DISTRICTS_FILE = DATA_DIR / "ashanti_districts_adm2.json"
+KAKUM_MICRO_SPATIAL_FILE = DATA_DIR / "kakum_micro_spatial.json"
 
 class SpatialRepository:
     """
@@ -23,6 +24,7 @@ class SpatialRepository:
         self.attractions: List[Attraction] = []
         self.regions_geojson: Dict[str, Any] = {}
         self.districts_by_region: Dict[str, Dict[str, Any]] = {}
+        self.micro_spatial_data: Dict[str, Any] = {}
         self.reload_data()
 
     def reload_data(self):
@@ -60,6 +62,17 @@ class SpatialRepository:
         if ASHANTI_DISTRICTS_FILE.exists():
             with open(ASHANTI_DISTRICTS_FILE, "r", encoding="utf-8") as f:
                 self.districts_by_region["ashanti"] = json.load(f)
+
+        # Load micro-spatial pilot datasets
+        self.micro_spatial_data = {}
+        if KAKUM_MICRO_SPATIAL_FILE.exists():
+            with open(KAKUM_MICRO_SPATIAL_FILE, "r", encoding="utf-8") as f:
+                k_data = json.load(f)
+                self.micro_spatial_data["kakum-national-park"] = k_data
+
+    def get_micro_spatial(self, attraction_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve Tier-4 site-level micro-spatial dataset for supported attractions."""
+        return self.micro_spatial_data.get(attraction_id.lower())
 
     def get_region_by_id(self, region_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve a specific region feature and metadata by slug ID."""
