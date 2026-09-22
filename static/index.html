@@ -248,99 +248,189 @@
             </div>
           </div>
 
-          <!-- Site Console Tab Navigation -->
-          <div class="flex border-b border-gray-200 bg-white text-xs font-semibold px-2 flex-shrink-0">
-            <button data-tab="pois" class="site-console-tab active py-2.5 px-3 border-b-2 border-emerald-700 text-emerald-800 transition-all flex items-center space-x-1">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-              <span>Micro-POIs</span>
-            </button>
-            <button data-tab="checklist" class="site-console-tab py-2.5 px-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center space-x-1">
-              <i data-lucide="check-square" class="w-3.5 h-3.5"></i>
-              <span>Checklist</span>
-              <span id="checklist-counter-badge" class="ml-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full">0/6</span>
-            </button>
-            <button data-tab="specs" class="site-console-tab py-2.5 px-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center space-x-1">
-              <i data-lucide="ruler" class="w-3.5 h-3.5"></i>
-              <span>Dimensions</span>
-            </button>
-            <button data-tab="safety" class="site-console-tab py-2.5 px-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center space-x-1">
-              <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
-              <span>Safety</span>
-            </button>
+          <!-- Dual-Mode Switcher: StoryMap vs Explorer -->
+          <div class="px-3 py-2 bg-emerald-950 text-white border-b border-emerald-900 flex-shrink-0">
+            <div class="flex items-center p-1 bg-emerald-900/70 rounded-xl border border-emerald-700/60 text-xs">
+              <button type="button" id="submode-btn-story" onclick="switchSiteSubMode('story')" class="flex-1 py-1.5 px-2 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 bg-emerald-600 text-white shadow-sm cursor-pointer">
+                <span>📖</span>
+                <span>Spatial Story Journey</span>
+              </button>
+              <button type="button" id="submode-btn-explorer" onclick="switchSiteSubMode('explorer')" class="flex-1 py-1.5 px-2 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 text-emerald-300 hover:text-white cursor-pointer">
+                <span>🛠️</span>
+                <span>Site Explorer & Tools</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Tab Contents Scroll Container -->
-          <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/70">
-            <!-- Tab Pane 1: Micro-POIs -->
-            <div id="tab-pane-pois" class="space-y-2.5">
-              <div class="flex items-center justify-between text-xs text-gray-500 font-semibold mb-1">
-                <span>SURVEYED SPATIAL FEATURES</span>
-                <span id="micro-poi-count" class="text-emerald-700 font-bold">14 Features</span>
+          <!-- CONTAINER 1: Spatial StoryMap Journey (Scrollytelling Mode) -->
+          <div id="site-story-container" class="flex-1 overflow-y-auto p-4 space-y-3.5 bg-gray-50/70">
+            <!-- Chapter Timeline Dots & Soundscape Header -->
+            <div class="bg-emerald-950 text-white p-3 rounded-xl border border-emerald-800 space-y-2.5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-300 flex items-center space-x-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>5-Act Spatial Scrollytelling</span>
+                </span>
+                <!-- Ambient Rainforest Sound Toggle -->
+                <button type="button" id="soundscape-toggle-btn" onclick="toggleRainforestSound()" class="text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-600 bg-emerald-900 hover:bg-emerald-800 text-emerald-200 transition-all flex items-center space-x-1 cursor-pointer">
+                  <span id="soundscape-icon">🔇</span>
+                  <span id="soundscape-label">Rainforest Sound</span>
+                </button>
               </div>
-              <div id="micro-pois-list" class="space-y-2">
-                <!-- Dynamically populated via app.js -->
+
+              <!-- Interactive 5-Act Progress Dots -->
+              <div class="flex items-center justify-between pt-1 px-1">
+                <button type="button" onclick="goToStoryChapter(0)" id="story-dot-0" class="story-step-dot active" title="Act I: The Island of Green">1</button>
+                <div class="h-0.5 flex-1 bg-emerald-800 mx-1"></div>
+                <button type="button" onclick="goToStoryChapter(1)" id="story-dot-1" class="story-step-dot" title="Act II: The Threshold">2</button>
+                <div class="h-0.5 flex-1 bg-emerald-800 mx-1"></div>
+                <button type="button" onclick="goToStoryChapter(2)" id="story-dot-2" class="story-step-dot" title="Act III: The Ascent">3</button>
+                <div class="h-0.5 flex-1 bg-emerald-800 mx-1"></div>
+                <button type="button" onclick="goToStoryChapter(3)" id="story-dot-3" class="story-step-dot" title="Act IV: Suspended in Crown">4</button>
+                <div class="h-0.5 flex-1 bg-emerald-800 mx-1"></div>
+                <button type="button" onclick="goToStoryChapter(4)" id="story-dot-4" class="story-step-dot" title="Act V: Beyond the Wires">5</button>
               </div>
             </div>
 
-            <!-- Tab Pane 2: Interactive Pre-Trip Checklist -->
-            <div id="tab-pane-checklist" class="hidden space-y-3">
-              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                <div class="flex items-center justify-between mb-1.5">
-                  <h4 class="text-xs font-bold text-emerald-950 flex items-center space-x-1.5">
-                    <i data-lucide="backpack" class="w-4 h-4 text-emerald-700"></i>
-                    <span>Kakum Pre-Trip Packing Guide</span>
+            <!-- Narrative Chapter Card -->
+            <div id="story-chapter-card" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-3">
+              <!-- Dynamically populated via app.js -->
+            </div>
+
+            <!-- Interactive 2.5D Vertical Stratification Cross-Section -->
+            <div class="bg-white rounded-xl border border-gray-200 p-3.5 shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-1.5 text-xs font-bold text-gray-900">
+                  <span class="text-emerald-700">🌲</span>
+                  <span>Rainforest Vertical Stratification</span>
+                </div>
+                <span class="text-[10px] text-gray-400 font-semibold">Z-Axis Profile (0 - 45m)</span>
+              </div>
+              <p class="text-[11px] text-gray-500 leading-tight">
+                Kakum operates vertically. Tap an ecological stratum to inspect its microclimate, keystone species, and position the 3D camera:
+              </p>
+              <div id="vertical-strata-list" class="space-y-1.5 pt-1">
+                <!-- Dynamically populated via app.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTAINER 2: Site Explorer & Tools (Operational Console Mode) -->
+          <div id="site-explorer-container" class="hidden flex-1 flex flex-col min-h-0">
+            <!-- Site Console Tab Navigation -->
+            <div class="flex border-b border-gray-200 bg-white text-xs font-semibold px-2 flex-shrink-0 overflow-x-auto">
+              <button data-tab="pois" class="site-console-tab active py-2.5 px-2.5 border-b-2 border-emerald-700 text-emerald-800 transition-all flex items-center space-x-1 whitespace-nowrap">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                <span>POIs & Zones</span>
+              </button>
+              <button data-tab="eligibility" class="site-console-tab py-2.5 px-2.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center space-x-1 whitespace-nowrap">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+                <span>Can I Do This?</span>
+              </button>
+              <button data-tab="checklist" class="site-console-tab py-2.5 px-2.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center space-x-1 whitespace-nowrap">
+                <i data-lucide="check-square" class="w-3.5 h-3.5"></i>
+                <span>Checklist</span>
+                <span id="checklist-counter-badge" class="ml-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full">0/6</span>
+              </button>
+              <button data-tab="specs" class="site-console-tab py-2.5 px-2.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center space-x-1 whitespace-nowrap">
+                <i data-lucide="ruler" class="w-3.5 h-3.5"></i>
+                <span>Dimensions</span>
+              </button>
+              <button data-tab="safety" class="site-console-tab py-2.5 px-2.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all flex items-center space-x-1 whitespace-nowrap">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+                <span>Safety</span>
+              </button>
+            </div>
+
+            <!-- Tab Contents Scroll Container -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/70">
+              <!-- Tab Pane 1: Micro-POIs -->
+              <div id="tab-pane-pois" class="space-y-2.5">
+                <div class="flex items-center justify-between text-xs text-gray-500 font-semibold mb-1">
+                  <span>SURVEYED SPATIAL FEATURES</span>
+                  <span id="micro-poi-count" class="text-emerald-700 font-bold">14 Features</span>
+                </div>
+                <div id="micro-pois-list" class="space-y-2">
+                  <!-- Dynamically populated via app.js -->
+                </div>
+              </div>
+
+              <!-- Tab Pane: Physical Eligibility Engine ("Can I Do This?") -->
+              <div id="tab-pane-eligibility" class="hidden space-y-3">
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3.5 space-y-1.5">
+                  <div class="flex items-center space-x-2 text-blue-900 font-bold text-xs">
+                    <i data-lucide="activity" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
+                    <span>"Can I Do This?" — Physical Eligibility Engine</span>
+                  </div>
+                  <p class="text-[11px] text-blue-800 leading-relaxed">
+                    Assess your party's physical readiness before paying park admission. Select a profile below for grounded advice:
+                  </p>
+                </div>
+                <div id="eligibility-cards-container" class="space-y-2.5">
+                  <!-- Dynamically populated via app.js -->
+                </div>
+              </div>
+
+              <!-- Tab Pane 2: Interactive Pre-Trip Checklist -->
+              <div id="tab-pane-checklist" class="hidden space-y-3">
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <h4 class="text-xs font-bold text-emerald-950 flex items-center space-x-1.5">
+                      <i data-lucide="backpack" class="w-4 h-4 text-emerald-700"></i>
+                      <span>Kakum Pre-Trip Packing Guide</span>
+                    </h4>
+                    <span id="checklist-progress-text" class="text-xs font-bold text-emerald-800">0 of 6 Ready</span>
+                  </div>
+                  <p class="text-[11px] text-emerald-800 leading-relaxed mb-2.5">
+                    Prepare your gear before departing Cape Coast. Check off items as you pack; your list saves automatically in your browser.
+                  </p>
+                  <div class="w-full bg-emerald-200 rounded-full h-2 overflow-hidden">
+                    <div id="checklist-progress-bar" class="bg-emerald-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                  </div>
+                </div>
+
+                <div id="checklist-items-container" class="space-y-2">
+                  <!-- Dynamically populated via app.js -->
+                </div>
+              </div>
+
+              <!-- Tab Pane 3: Walkway Dimensions & Transparency Notice -->
+              <div id="tab-pane-specs" class="hidden space-y-3">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
+                  <div class="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+                    <i data-lucide="scale" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
+                    <span>Transparent Attribution: Walkway Length</span>
+                  </div>
+                  <p class="text-[11px] text-amber-800 leading-relaxed">
+                    Published length metrics for the Kakum Canopy Walkway vary across official and academic sources. ExploreGhana transparently reports all documented citations rather than claiming false singular precision:
+                  </p>
+                </div>
+
+                <div id="disputed-specs-container" class="space-y-2.5">
+                  <!-- Dynamically populated via app.js -->
+                </div>
+              </div>
+
+              <!-- Tab Pane 4: Safety & Official Contacts -->
+              <div id="tab-pane-safety" class="hidden space-y-3">
+                <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-2">
+                  <div class="flex items-center space-x-2 text-rose-900 font-bold text-xs">
+                    <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
+                    <span>Mandatory Physical Safety Rules</span>
+                  </div>
+                  <div id="safety-protocols-container" class="space-y-2 text-xs text-gray-700">
+                    <!-- Dynamically populated via app.js -->
+                  </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl p-3.5 space-y-2">
+                  <h4 class="text-xs font-bold text-gray-800 flex items-center space-x-1.5">
+                    <i data-lucide="phone-call" class="w-4 h-4 text-emerald-700"></i>
+                    <span>Official Governing Agency Contacts</span>
                   </h4>
-                  <span id="checklist-progress-text" class="text-xs font-bold text-emerald-800">0 of 6 Ready</span>
-                </div>
-                <p class="text-[11px] text-emerald-800 leading-relaxed mb-2.5">
-                  Prepare your gear before departing Cape Coast. Check off items as you pack; your list saves automatically in your browser.
-                </p>
-                <div class="w-full bg-emerald-200 rounded-full h-2 overflow-hidden">
-                  <div id="checklist-progress-bar" class="bg-emerald-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-              </div>
-
-              <div id="checklist-items-container" class="space-y-2">
-                <!-- Dynamically populated via app.js -->
-              </div>
-            </div>
-
-            <!-- Tab Pane 3: Walkway Dimensions & Transparency Notice -->
-            <div id="tab-pane-specs" class="hidden space-y-3">
-              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
-                <div class="flex items-center space-x-2 text-amber-900 font-bold text-xs">
-                  <i data-lucide="scale" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
-                  <span>Transparent Attribution: Walkway Length</span>
-                </div>
-                <p class="text-[11px] text-amber-800 leading-relaxed">
-                  Published length metrics for the Kakum Canopy Walkway vary across official and academic sources. ExploreGhana transparently reports all documented citations rather than claiming false singular precision:
-                </p>
-              </div>
-
-              <div id="disputed-specs-container" class="space-y-2.5">
-                <!-- Dynamically populated via app.js -->
-              </div>
-            </div>
-
-            <!-- Tab Pane 4: Safety & Official Contacts -->
-            <div id="tab-pane-safety" class="hidden space-y-3">
-              <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 space-y-2">
-                <div class="flex items-center space-x-2 text-rose-900 font-bold text-xs">
-                  <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
-                  <span>Mandatory Physical Safety Rules</span>
-                </div>
-                <div id="safety-protocols-container" class="space-y-2 text-xs text-gray-700">
-                  <!-- Dynamically populated via app.js -->
-                </div>
-              </div>
-
-              <div class="bg-white border border-gray-200 rounded-xl p-3.5 space-y-2">
-                <h4 class="text-xs font-bold text-gray-800 flex items-center space-x-1.5">
-                  <i data-lucide="phone-call" class="w-4 h-4 text-emerald-700"></i>
-                  <span>Official Governing Agency Contacts</span>
-                </h4>
-                <div id="official-contacts-container" class="space-y-2 text-xs">
-                  <!-- Dynamically populated via app.js -->
+                  <div id="official-contacts-container" class="space-y-2 text-xs">
+                    <!-- Dynamically populated via app.js -->
+                  </div>
                 </div>
               </div>
             </div>

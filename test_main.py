@@ -434,4 +434,36 @@ class TestMicroSpatial:
         assert r.status_code == 404
         assert "detail" in r.json()
 
+    def test_kakum_story_chapters_and_vertical_stratification(self):
+        r = client.get("/api/attractions/kakum-national-park/micro-spatial")
+        assert r.status_code == 200
+        data = r.json()
+
+        # Story Chapters
+        chapters = data["story_chapters"]
+        assert len(chapters) == 5
+        act_numbers = [c["act_number"] for c in chapters]
+        assert act_numbers == [1, 2, 3, 4, 5]
+        assert "Island of Green" in chapters[0]["act_title"]
+        assert "Suspended in the Crown" in chapters[3]["act_title"]
+        assert chapters[3]["camera"]["pitch"] >= 50
+
+        # Vertical Stratification
+        strata = data["vertical_stratification"]
+        assert len(strata) == 4
+        assert strata[0]["stratum"] == "Emergent Layer"
+        assert strata[3]["stratum"] == "The Forest Floor"
+        assert strata[0]["sunlight_pct"] == 100
+        assert strata[3]["sunlight_pct"] <= 5
+
+        # Eligibility Criteria
+        elig = data["eligibility_criteria"]
+        assert len(elig) == 4
+        elig_ids = {e["id"] for e in elig}
+        assert "acrophobia" in elig_ids
+        assert "children" in elig_ids
+        assert "elderly" in elig_ids
+        assert "rain" in elig_ids
+
+
 

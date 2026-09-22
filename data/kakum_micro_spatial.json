@@ -624,5 +624,182 @@
       "value": "https://visitghana.com",
       "note": "National tourism promotion and certified destination register"
     }
+  ],
+  "story_chapters": [
+    {
+      "id": "act-1-refuge",
+      "act_number": 1,
+      "act_title": "Act I: The Island of Green",
+      "era": "1931 - 1992 Conservation Genesis",
+      "subtitle": "The 375 km² Sanctuary & Assin Attandanso Heritage",
+      "elevation_m": 150,
+      "camera": {
+        "center": [-1.3835, 5.3495],
+        "zoom": 12.2,
+        "pitch": 25,
+        "bearing": 0
+      },
+      "highlight_layers": [],
+      "narrative": "Viewed from high above, Kakum is a breathtaking island of emerald primary rainforest standing resilient against the surrounding mosaics of cocoa farms and logging roads. Originally designated in 1931 as a timber exploitation reserve, the forest faced complete annihilation by the late 1980s. Recognizing that the loss of this Upper Guinean rainforest would devastate rainfall patterns across coastal Ghana, local traditional chiefs from the Assin community joined forces with the Central Region Development Commission (CECEPA) and Conservation International. In 1992, Kakum was gazetted as a National Park—not by displacing local knowledge, but by hiring local hunters as wildlife rangers, turning indigenous tracking mastery into state conservation science.",
+      "proverb": "Woforo dua pa a, na yɛpia wo — When you climb a good tree, you are given a push. (Akan Proverb of Community Stewardship)",
+      "ecological_focus": "One of the last intact fragments of the ancient Upper Guinean moist evergreen forest, home to over 300 bird species and endangered forest elephants.",
+      "cultural_heritage": "For generations, the Assin people preserved sacred groves (abosom) and revered rivers like the Kakum, recognizing natural taboos as Ghana's indigenous conservation mechanism."
+    },
+    {
+      "id": "act-2-threshold",
+      "act_number": 2,
+      "act_title": "Act II: The Threshold of Civilization",
+      "era": "Arrival & Environmental Education",
+      "subtitle": "From the Trunk Road into the Protected Buffer",
+      "elevation_m": 150,
+      "camera": {
+        "center": [-1.38355, 5.34885],
+        "zoom": 18.2,
+        "pitch": 35,
+        "bearing": -10
+      },
+      "highlight_layers": ["kakum-parking-fill", "kakum-buildings-fill", "kakum-paved-line"],
+      "narrative": "The transition from the paved Cape Coast–Twifo Praso highway into the Kakum Visitor Hub marks the boundary between modern logistical travel and protected ecological sanctuary. Here at 150m above sea level, private vehicles, tour coaches, and trotros arrive at the surveyed parking lot. Visitors pass through the reception orientation hall, secure mandatory wristbands at the ticket office, and visit the Environmental Education Centre and Museum. The museum bridges traditional Assin folklore with contemporary botanical science, educating school children and international travelers on medicinal plants, termite mound architecture, and the urgent necessity of primate preservation before they ever touch the trail.",
+      "proverb": "Asuo a ɛbɛtene no, efi abɔnten — A river that will flow far begins with a clear spring.",
+      "ecological_focus": "The visitor hub forms the managed ecotourism buffer, concentrating human footprint within a 1.2-hectare perimeter to leave the remaining 37,400 hectares entirely undisturbed.",
+      "cultural_heritage": "Local community members operate the rainforest cafeteria and artisan stalls, directing economic dividends directly into surrounding rural schools and healthcare clinics."
+    },
+    {
+      "id": "act-3-ascent",
+      "act_number": 3,
+      "act_title": "Act III: The Ascent of the Ridge",
+      "era": "The Physical & Ecological Climb",
+      "subtitle": "350 Laterite Steps Through the Humid Understory",
+      "elevation_m": 175,
+      "camera": {
+        "center": [-1.3828, 5.3512],
+        "zoom": 17.8,
+        "pitch": 50,
+        "bearing": -15
+      },
+      "highlight_layers": ["kakum-trail-line"],
+      "narrative": "To reach the sky, you must first earn the ridge. The Canopy Approach Trail demands a 15-minute cardio ascent up 350 stone and laterite steps carved into the tropical hillside, rising from 135m to 190m elevation. As your boots climb, tropical humidity surges above 90%, and the forest closes overhead. Here on the damp forest floor, massive buttress roots spread outwards from African Mahogany (Entandrophragma) and Odum trees, acting as architectural flying buttresses in shallow nutrient-poor soils. Woody lianas hang like ship rigging from the mid-canopy, while medicinal ginger plants and giant African land snails thrive in the perpetual shade.",
+      "proverb": "Obi nkyerɛ abofra Nyame — Nobody needs to show God to a child (the majesty of nature speaks for itself).",
+      "ecological_focus": "Vertical stratification in action: light on the forest floor is just 1% to 2% of total sunlight. Plants develop broad dark green leaves with drip-tips to shed heavy rainwater.",
+      "cultural_heritage": "Guided medicinal plant walks along this ridge teach traditional herbal wisdom—identifying leaves used for centuries to treat malaria, snakebite inflammation, and fevers."
+    },
+    {
+      "id": "act-4-canopy",
+      "act_number": 4,
+      "act_title": "Act IV: Suspended in the Crown",
+      "era": "1995 Non-Invasive Engineering",
+      "subtitle": "7 Suspension Bridges, 40m Drop & The Bailout Spur",
+      "elevation_m": 190,
+      "camera": {
+        "center": [-1.3825, 5.3530],
+        "zoom": 18.5,
+        "pitch": 58,
+        "bearing": -20
+      },
+      "highlight_layers": ["kakum-trail-line"],
+      "narrative": "At Platform 1 on the high ridge, the world opens beneath your feet. Engineered in 1995 by two Canadian mountaineers from Vancouver working alongside Ghanaian foresters, the walkway stretches across 7 suspension bridges hung up to 40 meters (130 feet) above a deep forest gorge. The engineering feat was strictly non-invasive: not a single spike or bolt penetrates the living tree trunks. Instead, steel cables are secured around wooden friction blocks that naturally expand as the emergent Ceiba pentandra trees grow. As you walk the swaying narrow wooden planks, yellow-casqued hornbills and African grey parrots glide below you. Crucially, at Platform 2 lies the Emergency Bailout Spur—a compassionate spatial exit enabling visitors suffering from acute acrophobia or vertigo to safely descend to ground paths.",
+      "proverb": "Nsa baako nntumi nkyekyere biribi — One hand cannot tie a bundle (built by international engineers and local conservationists together).",
+      "ecological_focus": "The Emergent Canopy receives 100% full tropical sunlight. Here thrive sunbirds, epiphytic orchids, ferns, and high-altitude butterflies unseen on the ground.",
+      "cultural_heritage": "Only 3 canopy walkways exist in Africa. Kakum pioneered sustainable ecotourism as a viable economic alternative to destructive rainforest clear-cutting."
+    },
+    {
+      "id": "act-5-wilderness",
+      "act_number": 5,
+      "act_title": "Act V: Beyond the Wires",
+      "era": "Virgin Wilderness & Living Giants",
+      "subtitle": "The 300-Year Silk Cotton Giant & Afafranto Campsite",
+      "elevation_m": 160,
+      "camera": {
+        "center": [-1.3818, 5.3510],
+        "zoom": 16.5,
+        "pitch": 30,
+        "bearing": 10
+      },
+      "highlight_layers": [],
+      "narrative": "Beyond the adrenaline of the swinging bridges lies the ancient stillness of Kakum's virgin wilderness. A quiet forest trail leads to the Historic Big Tree—a colossal Ceiba pentandra over 300 years old, whose hollow trunk sheltered generations of hunters and forest travelers during the centuries of the trans-Atlantic trade. Nearby lies the Afafranto Campsite ('Afafranto' is the Akan word for butterfly). Here, researchers and overnight eco-campers fall asleep under mosquito nets to the nocturnal chorus of tree hyraxes, potto primates, and flying squirrels. In the deep 375 km² interior, guarded by armed wildlife rangers, roam shy forest elephants (Loxodonta cyclotis), leopards, and the endangered Diana monkey.",
+      "proverb": "Dua kɛseɛ hwe ase a, nnomaa firi so — When a great tree falls, the birds scatter (the sacred duty of preserving forest giants).",
+      "ecological_focus": "Afafranto is famous for over 600 recorded butterfly species, including iridescent Charaxes and swallowtails attracted to damp forest mineral clearings.",
+      "cultural_heritage": "Overnight camping with wildlife rangers provides authentic, zero-trace connection to the ancestral rhythms of the Ghanaian rainforest."
+    }
+  ],
+  "vertical_stratification": [
+    {
+      "stratum": "Emergent Layer",
+      "altitude_label": "35m – 45m Above Ground",
+      "color": "#10b981",
+      "icon": "🦅",
+      "sunlight_pct": 100,
+      "humidity_pct": 65,
+      "temperature_c": 29,
+      "human_experience": "Canopy Walkway suspension bridges. Sweeping panoramic forest sea views, direct tropical sun, wind gusts, and bird flight corridors.",
+      "key_species": ["Yellow-Casqued Hornbill", "African Grey Parrot", "Emergent Ceiba Pentandra", "Giant Swallowtail Butterfly"]
+    },
+    {
+      "stratum": "Canopy & Platform Level",
+      "altitude_label": "20m – 35m Above Ground",
+      "color": "#059669",
+      "icon": "🌉",
+      "sunlight_pct": 60,
+      "humidity_pct": 80,
+      "temperature_c": 27,
+      "human_experience": "Platform 1 & Bridge 1 Bailout Route. Tree crowns intertwine forming an unbroken green ceiling loaded with epiphytes and ferns.",
+      "key_species": ["Diana Monkey", "Colobus Monkey", "Tree Pangolin", "Epiphytic Orchids"]
+    },
+    {
+      "stratum": "The Understory",
+      "altitude_label": "5m – 20m Above Ground",
+      "color": "#047857",
+      "icon": "🌿",
+      "sunlight_pct": 15,
+      "humidity_pct": 90,
+      "temperature_c": 25,
+      "human_experience": "Mid-level vegetation on the 350-step ridge ascent. Woody lianas climbing like ropes, filtered soft emerald light.",
+      "key_species": ["Tree Frogs", "Cicadas", "Woody Lianas (Bauhinia)", "Understory Fruit Bats"]
+    },
+    {
+      "stratum": "The Forest Floor",
+      "altitude_label": "0m – 5m (Ground Level)",
+      "color": "#064e3b",
+      "icon": "🌱",
+      "sunlight_pct": 2,
+      "humidity_pct": 95,
+      "temperature_c": 24,
+      "human_experience": "Damp leaf litter, thick buttress roots, medicinal herb gardens, Afafranto campsite, and the base of ancient Silk Cotton giants.",
+      "key_species": ["Giant African Snail", "Forest Elephant (interior)", "Medicinal Ginger", "Termite Mounds"]
+    }
+  ],
+  "eligibility_criteria": [
+    {
+      "id": "acrophobia",
+      "label": "Acrophobia / Fear of Heights",
+      "icon": "😨",
+      "recommendation": "DOABLE VIA BAILOUT",
+      "badge_color": "amber",
+      "guidance": "You CAN attempt the canopy experience with confidence! Walk across Bridge 1 (a gentle 25m crossing). If vertigo sets in at Platform 2, take the Emergency Bailout Spur staircase directly back down to ground paths without having to cross Bridges 2 through 7."
+    },
+    {
+      "id": "children",
+      "label": "Toddlers & Children (< 6 Years)",
+      "icon": "👶",
+      "recommendation": "GROUND TRAILS ONLY",
+      "badge_color": "blue",
+      "guidance": "Children under 6 cannot safely grip the high wire side-ropes. We recommend the ground-level Sunbird Trail, Nature Museum exhibits, and shaded picnic gardens at the Visitor Centre Hub."
+    },
+    {
+      "id": "elderly",
+      "label": "Seniors & Reduced Mobility",
+      "icon": "🧓",
+      "recommendation": "BOTANICAL ADAPTED",
+      "badge_color": "emerald",
+      "guidance": "The 350-step uphill climb to the canopy walkway is physically demanding. Seniors are encouraged to enjoy the flat paved concourse, the botanical medicinal garden, and the visitor reception pavilion."
+    },
+    {
+      "id": "rain",
+      "label": "Rainy Weather / Thunderstorms",
+      "icon": "⛈️",
+      "recommendation": "TEMPORARY SUSPENSION",
+      "badge_color": "rose",
+      "guidance": "For visitor safety, Wildlife Division rangers immediately close the canopy walkway during active lightning storms or torrential downpours. Walkway resumes once lightning passes and wooden planks drain."
+    }
   ]
 }

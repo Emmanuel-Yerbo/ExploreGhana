@@ -89,6 +89,39 @@ class MicroSpatialGeoJSON(BaseModel):
     type: str = "FeatureCollection"
     features: List[MicroSpatialFeature]
 
+class StoryChapter(BaseModel):
+    id: str
+    act_number: int
+    act_title: str
+    era: str
+    subtitle: str
+    elevation_m: int
+    camera: Dict[str, Any]
+    highlight_layers: List[str]
+    narrative: str
+    proverb: str
+    ecological_focus: str
+    cultural_heritage: str
+
+class VerticalStratum(BaseModel):
+    stratum: str
+    altitude_label: str
+    color: str
+    icon: str
+    sunlight_pct: int
+    humidity_pct: int
+    temperature_c: int
+    human_experience: str
+    key_species: List[str]
+
+class EligibilityCriterion(BaseModel):
+    id: str
+    label: str
+    icon: str
+    recommendation: str
+    badge_color: str
+    guidance: str
+
 class MicroSpatialResponse(BaseModel):
     attraction_id: str
     site_name: str
@@ -101,4 +134,8 @@ class MicroSpatialResponse(BaseModel):
     physical_safety_protocols: Dict[str, Any]
     pre_trip_checklist: List[PreTripChecklistItem]
     official_contacts: List[Dict[str, Any]]
+    story_chapters: Optional[List[StoryChapter]] = None
+    vertical_stratification: Optional[List[VerticalStratum]] = None
+    eligibility_criteria: Optional[List[EligibilityCriterion]] = None
+
 

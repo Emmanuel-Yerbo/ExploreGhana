@@ -8,6 +8,9 @@ const state = {
   siteData: null,          // Micro-spatial dataset for active site
   microMarkers: {},        // Map markers for micro-POIs
   activePopup: null,       // Currently opened maplibre Popup instance
+  siteSubMode: 'story',    // 'story' | 'explorer'
+  currentStoryChapterIndex: 0,
+  soundscapeActive: false,
   regions: [],             // All 16 regions loaded from /api/regions
   districts: [],           // Districts for active region
   allAttractions: [],      // All 45 attractions loaded from /api/attractions
@@ -1403,6 +1406,366 @@ function focusSiteZone(zone) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// TIER-4 STORYMAP & DUAL-MODE SPATIAL NARRATIVE ENGINE
+// ---------------------------------------------------------------------------
+
+let soundscapeAudioCtx = null;
+let soundscapeGainNode = null;
+let soundscapeInterval = null;
+
+function toggleRainforestSound() {
+  const btn = document.getElementById('soundscape-toggle-btn');
+  const icon = document.getElementById('soundscape-icon');
+  const label = document.getElementById('soundscape-label');
+
+  if (state.soundscapeActive) {
+    if (soundscapeGainNode && soundscapeAudioCtx) {
+      try {
+        soundscapeGainNode.gain.linearRampToValueAtTime(0.001, soundscapeAudioCtx.currentTime + 0.8);
+        setTimeout(() => {
+          try { soundscapeAudioCtx.close(); } catch(e){}
+          soundscapeAudioCtx = null;
+        }, 900);
+      } catch(e){}
+    }
+    if (soundscapeInterval) clearInterval(soundscapeInterval);
+    state.soundscapeActive = false;
+    if (icon) icon.innerText = '🔇';
+    if (label) label.innerText = 'Rainforest Sound';
+    if (btn) btn.classList.remove('bg-emerald-700', 'text-white');
+  } else {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      soundscapeAudioCtx = new AudioCtx();
+      
+      const bufferSize = soundscapeAudioCtx.sampleRate * 2;
+      const buffer = soundscapeAudioCtx.createBuffer(1, bufferSize, soundscapeAudioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        data[i] = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = data[i];
+        data[i] *= 3.5;
+      }
+
+      const noise = soundscapeAudioCtx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      const filter = soundscapeAudioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 450;
+
+      soundscapeGainNode = soundscapeAudioCtx.createGain();
+      soundscapeGainNode.gain.setValueAtTime(0.01, soundscapeAudioCtx.currentTime);
+      soundscapeGainNode.gain.exponentialRampToValueAtTime(0.12, soundscapeAudioCtx.currentTime + 1.5);
+
+      noise.connect(filter);
+      filter.connect(soundscapeGainNode);
+      soundscapeGainNode.connect(soundscapeAudioCtx.destination);
+      noise.start(0);
+
+      soundscapeInterval = setInterval(() => {
+        if (!state.soundscapeActive || !soundscapeAudioCtx) return;
+        try {
+          const osc = soundscapeAudioCtx.createOscillator();
+          const oscGain = soundscapeAudioCtx.createGain();
+          const freqs = [1850, 2200, 2600, 3100];
+          const f = freqs[Math.floor(Math.random() * freqs.length)];
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, soundscapeAudioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(f * 0.75, soundscapeAudioCtx.currentTime + 0.18);
+          oscGain.gain.setValueAtTime(0.02, soundscapeAudioCtx.currentTime);
+          oscGain.gain.exponentialRampToValueAtTime(0.001, soundscapeAudioCtx.currentTime + 0.2);
+          osc.connect(oscGain);
+          oscGain.connect(soundscapeAudioCtx.destination);
+          osc.start();
+          osc.stop(soundscapeAudioCtx.currentTime + 0.22);
+        } catch(e){}
+      }, 3500);
+
+      state.soundscapeActive = true;
+      if (icon) icon.innerText = '🔊';
+      if (label) label.innerText = 'Sound: Playing';
+      if (btn) btn.classList.add('bg-emerald-700', 'text-white');
+    } catch(err) {
+      console.warn('Web Audio not supported or blocked:', err);
+      showToast('Audio autoplay not allowed without user gesture');
+    }
+  }
+}
+
+function switchSiteSubMode(mode) {
+  state.siteSubMode = mode;
+  const storyBtn = document.getElementById('submode-btn-story');
+  const explorerBtn = document.getElementById('submode-btn-explorer');
+  const storyContainer = document.getElementById('site-story-container');
+  const explorerContainer = document.getElementById('site-explorer-container');
+
+  if (mode === 'story') {
+    if (storyBtn) {
+      storyBtn.className = 'flex-1 py-1.5 px-2 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 bg-emerald-600 text-white shadow-sm cursor-pointer';
+    }
+    if (explorerBtn) {
+      explorerBtn.className = 'flex-1 py-1.5 px-2 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 text-emerald-300 hover:text-white cursor-pointer';
+    }
+    if (storyContainer) storyContainer.classList.remove('hidden');
+    if (explorerContainer) explorerContainer.classList.add('hidden');
+
+    if (state.siteData && state.siteData.story_chapters) {
+      goToStoryChapter(state.currentStoryChapterIndex || 0);
+    }
+  } else {
+    if (explorerBtn) {
+      explorerBtn.className = 'flex-1 py-1.5 px-2 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 bg-emerald-600 text-white shadow-sm cursor-pointer';
+    }
+    if (storyBtn) {
+      storyBtn.className = 'flex-1 py-1.5 px-2 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 text-emerald-300 hover:text-white cursor-pointer';
+    }
+    if (storyContainer) storyContainer.classList.add('hidden');
+    if (explorerContainer) explorerContainer.classList.remove('hidden');
+  }
+  lucide.createIcons();
+}
+
+function renderStoryMode(data) {
+  if (!data || !data.story_chapters) return;
+  renderStoryChapter(state.currentStoryChapterIndex || 0);
+  renderVerticalStratification(data.vertical_stratification);
+}
+
+function renderStoryChapter(index) {
+  const chapters = state.siteData ? state.siteData.story_chapters : null;
+  if (!chapters || !chapters[index]) return;
+  const ch = chapters[index];
+  const card = document.getElementById('story-chapter-card');
+  if (!card) return;
+
+  const total = chapters.length;
+
+  card.innerHTML = `
+    <div class="space-y-3">
+      <div>
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            ${ch.act_title}
+          </span>
+          <span class="text-[10px] font-bold text-gray-400">
+            ${ch.era}
+          </span>
+        </div>
+        <h3 class="text-sm font-black text-gray-900 leading-snug mt-1.5">
+          ${ch.subtitle}
+        </h3>
+        <div class="flex items-center space-x-2 mt-1 text-[10px] text-gray-500">
+          <span class="bg-gray-100 px-2 py-0.5 rounded font-semibold text-gray-700">🏔️ ${ch.elevation_m}m Elevation</span>
+          <span>&bull;</span>
+          <span>Act ${ch.act_number} of ${total}</span>
+        </div>
+      </div>
+
+      <p class="text-xs text-gray-700 leading-relaxed">
+        ${ch.narrative}
+      </p>
+
+      ${ch.proverb ? `
+        <div class="proverb-quote p-2.5 text-xs text-amber-900">
+          "${ch.proverb}"
+        </div>
+      ` : ''}
+
+      <div class="space-y-1.5 pt-1">
+        <div class="p-2.5 bg-emerald-50/80 rounded-xl border border-emerald-100 text-xs text-emerald-950 space-y-1">
+          <div class="flex items-center space-x-1.5 font-bold text-[11px] text-emerald-900">
+            <span>🌿</span>
+            <span>Ecological Science</span>
+          </div>
+          <p class="text-[11px] text-emerald-800 leading-snug">
+            ${ch.ecological_focus}
+          </p>
+        </div>
+
+        <div class="p-2.5 bg-amber-50/70 rounded-xl border border-amber-100 text-xs text-amber-950 space-y-1">
+          <div class="flex items-center space-x-1.5 font-bold text-[11px] text-amber-900">
+            <span>🏺</span>
+            <span>Cultural & Sacred Heritage</span>
+          </div>
+          <p class="text-[11px] text-amber-800 leading-snug">
+            ${ch.cultural_heritage}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs font-semibold">
+        <button 
+          type="button" 
+          onclick="goToStoryChapter(${index - 1})"
+          ${index === 0 ? 'disabled class="text-gray-300 cursor-not-allowed py-1.5 px-3 rounded-lg border border-gray-100"' : 'class="text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 py-1.5 px-3 rounded-lg border border-gray-200 transition-all cursor-pointer flex items-center space-x-1"'}
+        >
+          <span>← Prev Act</span>
+        </button>
+
+        <button 
+          type="button" 
+          onclick="goToStoryChapter(${index})"
+          class="text-emerald-700 hover:bg-emerald-50 py-1.5 px-2.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+          title="Refocus camera on this act's coordinates"
+        >
+          <span>🗺️ Refocus</span>
+        </button>
+
+        <button 
+          type="button" 
+          onclick="goToStoryChapter(${index + 1})"
+          ${index === total - 1 ? 'disabled class="text-gray-300 cursor-not-allowed py-1.5 px-3 rounded-lg border border-gray-100"' : 'class="bg-emerald-700 hover:bg-emerald-800 text-white py-1.5 px-3 rounded-lg shadow-sm transition-all cursor-pointer flex items-center space-x-1"'}
+        >
+          <span>Next Act →</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function goToStoryChapter(index) {
+  const chapters = state.siteData ? state.siteData.story_chapters : null;
+  if (!chapters || index < 0 || index >= chapters.length) return;
+
+  state.currentStoryChapterIndex = index;
+  closeAllPopups();
+
+  for (let i = 0; i < chapters.length; i++) {
+    const dot = document.getElementById(`story-dot-${i}`);
+    if (dot) {
+      if (i === index) dot.classList.add('active');
+      else dot.classList.remove('active');
+    }
+  }
+
+  renderStoryChapter(index);
+
+  const ch = chapters[index];
+  const sidebarWidth = window.innerWidth >= 768 ? 440 : 0;
+
+  map.flyTo({
+    center: ch.camera.center,
+    zoom: ch.camera.zoom,
+    pitch: ch.camera.pitch || 35,
+    bearing: ch.camera.bearing || 0,
+    padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
+    duration: 1600,
+    essential: true
+  });
+
+  const allLayers = ['kakum-parking-fill', 'kakum-buildings-fill', 'kakum-paved-line', 'kakum-trail-line'];
+  allLayers.forEach(lyr => {
+    if (map.getLayer(lyr)) {
+      if (ch.highlight_layers && ch.highlight_layers.includes(lyr)) {
+        if (lyr.includes('line')) {
+          map.setPaintProperty(lyr, 'line-width', 5);
+        } else if (lyr.includes('fill')) {
+          map.setPaintProperty(lyr, 'fill-opacity', 0.65);
+        }
+      } else {
+        if (lyr.includes('line')) {
+          map.setPaintProperty(lyr, 'line-width', 3);
+        } else if (lyr.includes('fill')) {
+          map.setPaintProperty(lyr, 'fill-opacity', 0.35);
+        }
+      }
+    }
+  });
+}
+
+function renderVerticalStratification(strata) {
+  const container = document.getElementById('vertical-strata-list');
+  if (!container || !strata) return;
+
+  container.innerHTML = strata.map((s, idx) => `
+    <div 
+      onclick="focusVerticalStratum(${idx})"
+      class="vertical-stratum-card p-2.5 bg-white rounded-xl border border-gray-200 hover:border-emerald-500 cursor-pointer shadow-2xs transition-all space-y-1"
+      id="stratum-card-${idx}"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-base">${s.icon}</span>
+          <div>
+            <h5 class="text-xs font-bold text-gray-900 leading-tight">${s.stratum}</h5>
+            <span class="text-[10px] text-gray-500">${s.altitude_label}</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+            ☀️ ${s.sunlight_pct}% Light
+          </span>
+        </div>
+      </div>
+      <p class="text-[11px] text-gray-600 leading-snug">
+        ${s.human_experience}
+      </p>
+      <div class="flex flex-wrap gap-1 pt-0.5 text-[9px]">
+        <span class="font-semibold text-gray-400 uppercase tracking-wider">Species:</span>
+        ${s.key_species.slice(0, 3).map(sp => `
+          <span class="bg-gray-100 text-gray-700 px-1.5 py-0.2 rounded font-medium">${sp}</span>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function focusVerticalStratum(idx) {
+  const strata = state.siteData ? state.siteData.vertical_stratification : null;
+  if (!strata || !strata[idx]) return;
+
+  document.querySelectorAll('.vertical-stratum-card').forEach((c, i) => {
+    if (i === idx) c.classList.add('active');
+    else c.classList.remove('active');
+  });
+
+  const sidebarWidth = window.innerWidth >= 768 ? 440 : 0;
+  closeAllPopups();
+
+  if (idx === 0) {
+    map.flyTo({
+      center: [-1.3825, 5.3532],
+      zoom: 18.6,
+      pitch: 60,
+      bearing: -20,
+      padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
+      duration: 1400
+    });
+  } else if (idx === 1) {
+    map.flyTo({
+      center: [-1.3835, 5.3537],
+      zoom: 18.2,
+      pitch: 45,
+      bearing: -10,
+      padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
+      duration: 1400
+    });
+  } else if (idx === 2) {
+    map.flyTo({
+      center: [-1.3828, 5.3512],
+      zoom: 17.8,
+      pitch: 50,
+      bearing: -15,
+      padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
+      duration: 1400
+    });
+  } else {
+    map.flyTo({
+      center: [-1.3836, 5.34885],
+      zoom: 18.2,
+      pitch: 35,
+      bearing: -10,
+      padding: { left: sidebarWidth, top: 40, bottom: 40, right: 40 },
+      duration: 1400
+    });
+  }
+}
+
 async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national-park') {
   state.currentTier = 'site';
   state.selectedRegionId = regionId;
@@ -1483,11 +1846,18 @@ async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national
     // Render HTML Markers on Map
     renderMicroMarkers(data.geojson);
 
+    // Render StoryMap Mode
+    renderStoryMode(data);
+
     // Render Sidebar Console Panels
     renderMicroPOIsTab(data.geojson);
+    renderEligibilityTab(data.eligibility_criteria);
     renderChecklistTab(data.pre_trip_checklist);
     renderDisputedSpecsTab(data.disputed_specifications);
     renderSafetyTab(data.physical_safety_protocols, data.official_contacts);
+
+    // Switch to initial sub-mode (StoryMap by default)
+    switchSiteSubMode(state.siteSubMode || 'story');
 
   } catch (err) {
     console.error('Error in enterSiteConsole:', err);
@@ -1499,6 +1869,10 @@ async function enterSiteConsole(regionId = 'central', siteSlug = 'kakum-national
 
 function exitSiteConsole(updateHash = true) {
   closeAllPopups();
+
+  if (state.soundscapeActive) {
+    toggleRainforestSound();
+  }
 
   // Clear micro markers from map
   Object.values(state.microMarkers).forEach(m => m.remove());
@@ -1975,6 +2349,33 @@ function renderSafetyTab(protocols, contacts) {
   }
 }
 
+function renderEligibilityTab(criteria) {
+  const container = document.getElementById('eligibility-cards-container');
+  if (!container || !criteria) return;
+
+  container.innerHTML = criteria.map(crit => `
+    <div class="bg-white rounded-xl border border-gray-200 p-3.5 space-y-2 shadow-2xs">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">${crit.icon}</span>
+          <h4 class="text-xs font-bold text-gray-900">${crit.label}</h4>
+        </div>
+        <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+          crit.badge_color === 'amber' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+          crit.badge_color === 'blue' ? 'bg-blue-100 text-blue-800 border border-blue-300' :
+          crit.badge_color === 'rose' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+          'bg-emerald-100 text-emerald-800 border border-emerald-300'
+        }">
+          ${crit.recommendation}
+        </span>
+      </div>
+      <p class="text-[11px] text-gray-700 leading-relaxed bg-gray-50/70 p-2 rounded-lg border border-gray-100">
+        ${crit.guidance}
+      </p>
+    </div>
+  `).join('');
+}
+
 function setupSiteConsoleTabs() {
   const tabs = document.querySelectorAll('.site-console-tab');
   tabs.forEach(tab => {
@@ -1987,7 +2388,7 @@ function setupSiteConsoleTabs() {
       tab.classList.remove('border-transparent', 'text-gray-500');
 
       const targetTab = tab.dataset.tab;
-      ['pois', 'checklist', 'specs', 'safety'].forEach(tabName => {
+      ['pois', 'eligibility', 'checklist', 'specs', 'safety'].forEach(tabName => {
         const pane = document.getElementById(`tab-pane-${tabName}`);
         if (pane) {
           if (tabName === targetTab) {
@@ -2008,4 +2409,5 @@ function setupSiteConsoleTabs() {
     });
   }
 }
+
 
